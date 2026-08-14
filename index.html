@@ -2,6 +2,15 @@
 <html lang="bg">
 <head>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "https://mvbdghkryjrukezhmwhm.supabase.co/rest/v1/";
+const SUPABASE_KEY = "sb_publishable_RWRPjPcybpqcQPpUTbILUg_VZOBjWI_";
+
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DRCraft | Handmade with Love</title>
