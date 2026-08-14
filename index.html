@@ -290,6 +290,7 @@ async function loadProductsFromSupabase(){
 
   if(error){
     console.error("Supabase products error:",error);
+alert("Supabase error: " + JSON.stringify(error));;
     return;
   }
 
