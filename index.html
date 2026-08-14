@@ -279,7 +279,7 @@ document.querySelector("#year").textContent=new Date().getFullYear();renderFilte
 
   try {
     const response = await fetch(
-      SUPABASE_URL + "/rest/v1/DrCrafts%20artikuli?select=*",
+      SUPABASE_URL + '/rest/v1/%22DrCrafts%20artikuli%22?select=*',,
       {
         headers: {
           "apikey": SUPABASE_KEY,
