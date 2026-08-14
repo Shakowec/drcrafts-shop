@@ -272,6 +272,6 @@ document.querySelector("#cartBtn").onclick=openCart;document.querySelector("#clo
 document.querySelector("#searchBtn").onclick=()=>{document.querySelector("#searchPanel").classList.add("open");document.querySelector("#searchInput").focus()};document.querySelector("#closeSearch").onclick=()=>document.querySelector("#searchPanel").classList.remove("open");document.querySelector("#searchInput").oninput=renderProducts;
 document.querySelectorAll(".category-card").forEach(b=>b.onclick=()=>{filter=b.dataset.cat;renderFilters();renderProducts();document.querySelector("#shop").scrollIntoView({behavior:"smooth"})});
 document.querySelector("#year").textContent=new Date().getFullYear();renderFilters();renderProducts();renderCart();
-})();</script>
+</script>
 </body>
 </html>
