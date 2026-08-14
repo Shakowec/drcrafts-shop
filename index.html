@@ -272,55 +272,6 @@ document.querySelector("#cartBtn").onclick=openCart;document.querySelector("#clo
 document.querySelector("#searchBtn").onclick=()=>{document.querySelector("#searchPanel").classList.add("open");document.querySelector("#searchInput").focus()};document.querySelector("#closeSearch").onclick=()=>document.querySelector("#searchPanel").classList.remove("open");document.querySelector("#searchInput").oninput=renderProducts;
 document.querySelectorAll(".category-card").forEach(b=>b.onclick=()=>{filter=b.dataset.cat;renderFilters();renderProducts();document.querySelector("#shop").scrollIntoView({behavior:"smooth"})});
 document.querySelector("#year").textContent=new Date().getFullYear();renderFilters();renderProducts();renderCart();
-// Зареждане на продуктите от Supabase
-(async function loadProductsFromSupabase() {
-  const SUPABASE_URL = "https://mvbdghkryjrukezhmwhm.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_RWRPjPcybpqcQPpUTbILUg_VZOBjWI_";
-
-  try {
-    const response = await fetch(
-      SUPABASE_URL + '/rest/v1/%22DrCrafts%20artikuli%22?select=*',,
-      {
-        headers: {
-          "apikey": SUPABASE_KEY,
-          "Authorization": "Bearer " + SUPABASE_KEY
-        }
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error("Supabase error: " + response.status);
-    }
-
-    const data = await response.json();
-
-    // Преобразуваме данните от Supabase
-    // във формата, който сегашният сайт използва
-    const productsFromDatabase = data
-      .filter(p => p.available !== false)
-      .map(p => ({
-        id: String(p.id),
-        name: p.name || "Продукт",
-        cat: p.category || "Други",
-        price: Number(p.price || 0),
-        desc: p.description || "",
-        image: p.image_url || "",
-        popular: p.popular === true,
-        symbol: "✦",
-        theme: "p-gift"
-      }));
-
-    // Замества старите продукти с тези от базата
-    PRODUCTS.splice(0, PRODUCTS.length, ...productsFromDatabase);
-
-    // Показваме новите продукти
-    renderFilters();
-    renderProducts();
-
-    console.log("Supabase products loaded:", productsFromDatabase);
-  } catch (error) {
-    console.error("Supabase error:", error);
-  }
 })();</script>
 </body>
 </html>
