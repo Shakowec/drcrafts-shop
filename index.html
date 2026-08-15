@@ -269,7 +269,7 @@ const supabaseClient = window.supabase.createClient(
 let cart=JSON.parse(localStorage.getItem("drcraft-cart")||"[]"),filter="Всички";
 const euro=n=>n.toLocaleString("bg-BG",{style:"currency",currency:"EUR"});
 function renderFilters(){const cats=["Всички",...new Set(PRODUCTS.map(p=>p.cat))];document.querySelector("#filters").innerHTML=cats.map(c=>`<button class="filter ${c===filter?"active":""}" data-filter="${c}">${c}</button>`).join("");document.querySelectorAll(".filter").forEach(b=>b.onclick=()=>{filter=b.dataset.filter;renderFilters();renderProducts()})}
-function renderProducts(){const q=(document.querySelector("#searchInput")?.value||"").toLowerCase().trim();let ps=filter==="Всички"?PRODUCTS:PRODUCTS.filter(p=>p.cat===filter);if(q)ps=ps.filter(p=>(p.name+" "+p.cat+" "+p.desc).toLowerCase().includes(q));document.querySelector("#products").innerHTML=ps.length?ps.map(p=>`<article class="product"><div class="product-img ${p.theme} ${p.image?"has-photo":""}">${p.image?`<img src="${p.image}" alt="${p.name}">`:`<div class="product-symbol">${p.symbol}</div>`}</div><div class="product-info"><h3>${p.name}</h3><p>${p.desc}</p><div class="price-row"><span class="price">${euro(p.price)}</span><button class="add" data-add="${p.id}">ДОБАВИ</button></div></div></article>`).join(""):'<p style="grid-column:1/-1;color:#777">Няма намерени продукти.</p>';document.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>add(b.dataset.add))}
+function renderProducts(){const q=(document.querySelector("#searchInput")?.value||"").toLowerCase().trim();let ps=filter==="Всички"?PRODUCTS:PRODUCTS.filter(p=>p.cat===filter);if(q)ps=ps.filter(p=>(p.name+" "+p.cat+" "+p.desc).toLowerCase().includes(q));document.querySelector("#products").innerHTML=ps.length?ps.map(p=>`<article class="product"><div class="product-img ${p.theme} ${p.image?"has-photo":""}">${p.image ? `<img src="${String(p.image).trim()}" alt="${p.name}" onerror="this.style.display='none';this.parentElement.innerHTML='<div class=&quot;product-symbol&quot;>${p.symbol}</div>'">`:`<div class="product-symbol">${p.symbol}</div>`}</div><div class="product-info"><h3>${p.name}</h3><p>${p.desc}</p><div class="price-row"><span class="price">${euro(p.price)}</span><button class="add" data-add="${p.id}">ДОБАВИ</button></div></div></article>`).join(""):'<p style="grid-column:1/-1;color:#777">Няма намерени продукти.</p>';document.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>add(b.dataset.add))}
 function add(id){const i=cart.find(x=>x.id===id);i?i.qty++:cart.push({id,qty:1});save();openCart()}
 function change(id,d){const i=cart.find(x=>x.id===id);if(!i)return;i.qty+=d;if(i.qty<=0)cart=cart.filter(x=>x.id!==id);save();renderCart()}
 function removeItem(id){cart=cart.filter(x=>x.id!==id);save();renderCart()}
@@ -301,7 +301,7 @@ alert("Supabase error: " + JSON.stringify(error));;
       cat:p.category || p.cat || "",
       price:Number(p.price)||0,
       desc:p.description || p.desc || "",
-      image:p.image_url || p.image || "",
+      image: String(p.image_url || p.image || "").trim(),
       popular:p.popular ?? false
     }));
 
