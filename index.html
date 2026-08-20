@@ -385,7 +385,7 @@ function renderCart(){
   let total = 0;
 
   items.innerHTML = cart.map(x => {
-    const p = PRODUCTS.find(p => p.id === x.id);
+    const p = PRODUCTS.find(p => String(p.id) === String(x.id));
 
     if(!p){
       return `
