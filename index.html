@@ -283,6 +283,7 @@ const supabaseClient = window.supabase.createClient(
   <div class="cart-bottom"><div class="total"><span>Общо</span><strong id="cartTotal">€0,00</strong></div><button class="gold-btn full" id="checkoutBtn">КЪМ ПЛАЩАНЕ →</button><p class="tiny">Сигурното плащане ще бъде обработено чрез защитена платежна страница.</p></div>
 </aside>
 <div class="overlay" id="overlay"></div>
+  <script>
 let PRODUCTS=[];  
 let cart=JSON.parse(localStorage.getItem("drcraft-cart")||"[]"),filter="Всички";
 const euro=n=>n.toLocaleString("bg-BG",{style:"currency",currency:"EUR"});
