@@ -284,7 +284,6 @@ const supabaseClient = window.supabase.createClient(
 </aside>
 <div class="overlay" id="overlay"></div>
 let PRODUCTS=[];
-];
 let cart=JSON.parse(localStorage.getItem("drcraft-cart")||"[]"),filter="Всички";
 const euro=n=>n.toLocaleString("bg-BG",{style:"currency",currency:"EUR"});
 function renderFilters(){const cats=["Всички",...new Set(PRODUCTS.map(p=>p.cat))];document.querySelector("#filters").innerHTML=cats.map(c=>`<button class="filter ${c===filter?"active":""}" data-filter="${c}">${c}</button>`).join("");document.querySelectorAll(".filter").forEach(b=>b.onclick=()=>{filter=b.dataset.filter;renderFilters();renderProducts()})}
