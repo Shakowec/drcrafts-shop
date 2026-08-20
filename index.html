@@ -375,7 +375,91 @@ function add(id){const i=cart.find(x=>x.id===id);i?i.qty++:cart.push({id,qty:1})
 function change(id,d){const i=cart.find(x=>x.id===id);if(!i)return;i.qty+=d;if(i.qty<=0)cart=cart.filter(x=>x.id!==id);save();renderCart()}
 function removeItem(id){cart=cart.filter(x=>x.id!==id);save();renderCart()}
 function save(){localStorage.setItem("drcraft-cart",JSON.stringify(cart));renderCart()}
-function renderCart(){const items=document.querySelector("#cartItems"),count=cart.reduce((a,x)=>a+x.qty,0);document.querySelector("#cartCount").textContent=count;if(!cart.length){items.innerHTML='<div style="padding:50px 0;text-align:center;color:#81786f">Вашата количка е празна.<br><br><a href="#shop" onclick="closeCart()">Разгледайте продуктите →</a></div>';document.querySelector("#cartTotal").textContent=euro(0);return}let total=0;items.innerHTML=cart.map(x=>{const p=PRODUCTS.find(p=>p.id===x.id),sub=p.price*x.qty;total+=sub;return `<div class="cart-line"><div class="thumb">${p.symbol}</div><div><strong>${p.name}</strong><div class="qty"><button data-dec="${p.id}">−</button><span>${x.qty}</span><button data-inc="${p.id}">+</button><button class="remove" data-rem="${p.id}">Премахни</button></div></div><strong>${euro(sub)}</strong></div>`}).join("");document.querySelector("#cartTotal").textContent=euro(total);document.querySelectorAll("[data-dec]").forEach(b=>b.onclick=()=>change(b.dataset.dec,-1));document.querySelectorAll("[data-inc]").forEach(b=>b.onclick=()=>change(b.dataset.inc,1));document.querySelectorAll("[data-rem]").forEach(b=>b.onclick=()=>removeItem(b.dataset.rem))}
+function renderCart(){
+  const items = document.querySelector("#cartItems");
+  const count = cart.reduce((a,x)=>a+x.qty,0);
+
+  document.querySelector("#cartCount").textContent = count;
+
+  if(!cart.length){
+    items.innerHTML = `
+      <div style="padding:50px 0;text-align:center;color:#81786f">
+        Вашата количка е празна.<br><br>
+        <a href="#shop" onclick="closeCart()">Разгледайте продуктите →</a>
+      </div>
+    `;
+    document.querySelector("#cartTotal").textContent = euro(0);
+    return;
+  }
+
+  let total = 0;
+
+  items.innerHTML = cart.map(x => {
+    const p = PRODUCTS.find(p => p.id === x.id);
+
+    if(!p){
+      return `
+        <div class="cart-line">
+          <div class="thumb">🛍️</div>
+          <div>
+            <strong>Продукт</strong>
+            <div class="qty">
+              <button data-dec="${x.id}">−</button>
+              <span>${x.qty}</span>
+              <button data-inc="${x.id}">+</button>
+              <button class="remove" data-rem="${x.id}">Премахни</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    const sub = p.price * x.qty;
+    total += sub;
+
+    return `
+      <div class="cart-line">
+        <div class="thumb">
+          ${p.image 
+            ? `<img src="${String(p.image).trim()}" alt="${p.name}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;">`
+            : `<div style="font-size:32px">${p.symbol || "🛍️"}</div>`
+          }
+        </div>
+
+        <div style="flex:1">
+          <strong>${p.name}</strong>
+
+          <div style="margin:6px 0;color:#81786f">
+            ${euro(p.price)} / бр.
+          </div>
+
+          <div class="qty">
+            <button data-dec="${p.id}">−</button>
+            <span>${x.qty}</span>
+            <button data-inc="${p.id}">+</button>
+            <button class="remove" data-rem="${p.id}">Премахни</button>
+          </div>
+        </div>
+
+        <strong>${euro(sub)}</strong>
+      </div>
+    `;
+  }).join("");
+
+  document.querySelector("#cartTotal").textContent = euro(total);
+
+  document.querySelectorAll("[data-dec]").forEach(b =>
+    b.onclick = () => change(b.dataset.dec,-1)
+  );
+
+  document.querySelectorAll("[data-inc]").forEach(b =>
+    b.onclick = () => change(b.dataset.inc,1)
+  );
+
+  document.querySelectorAll("[data-rem]").forEach(b =>
+    b.onclick = () => removeItem(b.dataset.rem)
+  );
+}
 function openCart(){document.querySelector("#cartDrawer").classList.add("open");document.querySelector("#overlay").classList.add("show");document.querySelector("#cartDrawer").setAttribute("aria-hidden","false")}
 function closeCart(){document.querySelector("#cartDrawer").classList.remove("open");document.querySelector("#overlay").classList.remove("show");document.querySelector("#cartDrawer").setAttribute("aria-hidden","true")}
 async function checkout(){if(!cart.length)return;const btn=document.querySelector("#checkoutBtn");btn.disabled=true;btn.textContent="ПОДГОТВЯНЕ…";try{const r=await fetch("/api/create-checkout-session",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({items:cart})});const data=await r.json();if(data.url)location.href=data.url;else throw new Error(data.error||"Checkout error")}catch(e){alert("Checkout ще бъде активиран след свързването на Stripe. Количката вече работи.");btn.disabled=false;btn.textContent="КЪМ ПЛАЩАНЕ →"}}
