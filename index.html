@@ -453,7 +453,207 @@ function renderCart(){
 }
 function openCart(){document.querySelector("#cartDrawer").classList.add("open");document.querySelector("#overlay").classList.add("show");document.querySelector("#cartDrawer").setAttribute("aria-hidden","false")}
 function closeCart(){document.querySelector("#cartDrawer").classList.remove("open");document.querySelector("#overlay").classList.remove("show");document.querySelector("#cartDrawer").setAttribute("aria-hidden","true")}
-async function checkout(){if(!cart.length)return;const btn=document.querySelector("#checkoutBtn");btn.disabled=true;btn.textContent="ПОДГОТВЯНЕ…";try{const r=await fetch("/api/create-checkout-session",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({items:cart})});const data=await r.json();if(data.url)location.href=data.url;else throw new Error(data.error||"Checkout error")}catch(e){alert("Checkout ще бъде активиран след свързването на Stripe. Количката вече работи.");btn.disabled=false;btn.textContent="КЪМ ПЛАЩАНЕ →"}}
+async function checkout(){
+  if(!cart.length) return;
+
+  const old=document.querySelector("#checkoutModal");
+  if(old) old.remove();
+
+  const modal=document.createElement("div");
+  modal.id="checkoutModal";
+  modal.innerHTML=`
+    <div style="
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.45);
+      z-index:9999;
+      display:flex;
+      align-items:flex-end;
+      justify-content:center;
+    ">
+      <div style="
+        background:#fff;
+        width:100%;
+        max-width:600px;
+        max-height:92vh;
+        overflow:auto;
+        padding:28px 22px 35px;
+        border-radius:22px 22px 0 0;
+        box-sizing:border-box;
+      ">
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          margin-bottom:25px;
+        ">
+          <h2 style="margin:0;font-size:30px;color:#29231f">
+            Данни за поръчката
+          </h2>
+
+          <button id="closeCheckout"
+            style="
+              border:0;
+              background:none;
+              font-size:32px;
+              color:#b58a2c;
+              cursor:pointer;
+            ">
+            ×
+          </button>
+        </div>
+
+        <div style="display:grid;gap:15px">
+
+          <input id="customerName"
+            type="text"
+            placeholder="Име и фамилия"
+            required
+            style="
+              width:100%;
+              box-sizing:border-box;
+              padding:15px;
+              border:1px solid #ddd;
+              border-radius:8px;
+              font-size:16px;
+            ">
+
+          <input id="customerPhone"
+            type="tel"
+            placeholder="Телефон"
+            required
+            style="
+              width:100%;
+              box-sizing:border-box;
+              padding:15px;
+              border:1px solid #ddd;
+              border-radius:8px;
+              font-size:16px;
+            ">
+
+          <input id="customerEmail"
+            type="email"
+            placeholder="Имейл"
+            required
+            style="
+              width:100%;
+              box-sizing:border-box;
+              padding:15px;
+              border:1px solid #ddd;
+              border-radius:8px;
+              font-size:16px;
+            ">
+
+          <input id="customerAddress"
+            type="text"
+            placeholder="Адрес за доставка"
+            required
+            style="
+              width:100%;
+              box-sizing:border-box;
+              padding:15px;
+              border:1px solid #ddd;
+              border-radius:8px;
+              font-size:16px;
+            ">
+
+          <textarea id="customerNote"
+            placeholder="Бележка към поръчката (по желание)"
+            rows="4"
+            style="
+              width:100%;
+              box-sizing:border-box;
+              padding:15px;
+              border:1px solid #ddd;
+              border-radius:8px;
+              font-size:16px;
+              resize:vertical;
+            "></textarea>
+
+          <button id="continueCheckout"
+            style="
+              width:100%;
+              padding:17px;
+              border:0;
+              border-radius:8px;
+              background:#b58a2c;
+              color:#fff;
+              font-size:16px;
+              font-weight:700;
+              cursor:pointer;
+            ">
+            ПРОДЪЛЖИ КЪМ ПЛАЩАНЕ →
+          </button>
+
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  document.querySelector("#closeCheckout").onclick=()=>{
+    modal.remove();
+  };
+
+  document.querySelector("#continueCheckout").onclick=async()=>{
+
+    const customer={
+      name:document.querySelector("#customerName").value.trim(),
+      phone:document.querySelector("#customerPhone").value.trim(),
+      email:document.querySelector("#customerEmail").value.trim(),
+      address:document.querySelector("#customerAddress").value.trim(),
+      note:document.querySelector("#customerNote").value.trim()
+    };
+
+    if(!customer.name ||
+       !customer.phone ||
+       !customer.email ||
+       !customer.address){
+
+      alert("Моля, попълнете всички задължителни полета.");
+      return;
+    }
+
+    const btn=document.querySelector("#continueCheckout");
+
+    btn.disabled=true;
+    btn.textContent="ПОДГОТВЯНЕ...";
+
+    try{
+
+      const r=await fetch("/api/create-checkout-session",{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          items:cart,
+          customer:customer
+        })
+      });
+
+      const data=await r.json();
+
+      if(data.url){
+        location.href=data.url;
+      }else{
+        throw new Error(data.error||"Checkout error");
+      }
+
+    }catch(e){
+
+      console.error(e);
+
+      alert(
+        "Възникна проблем при започване на плащането."
+      );
+
+      btn.disabled=false;
+      btn.textContent="ПРОДЪЛЖИ КЪМ ПЛАЩАНЕ →";
+    }
+  };
+}
 document.querySelector("#cartBtn").onclick=openCart;document.querySelector("#closeCart").onclick=closeCart;document.querySelector("#overlay").onclick=closeCart;document.querySelector("#checkoutBtn").onclick=checkout;
 document.querySelector("#searchBtn").onclick=()=>{document.querySelector("#searchPanel").classList.add("open");document.querySelector("#searchInput").focus()};document.querySelector("#closeSearch").onclick=()=>document.querySelector("#searchPanel").classList.remove("open");document.querySelector("#searchInput").oninput=renderProducts;
 document.querySelectorAll(".category-card").forEach(b=>b.onclick=()=>{filter=b.dataset.cat;renderFilters();renderProducts();document.querySelector("#shop").scrollIntoView({behavior:"smooth"})});
