@@ -532,7 +532,63 @@ async function checkout(){
           <label>Имейл *</label>
           <input required name="email" type="email"
             style="width:100%;padding:13px;margin:7px 0 15px;box-sizing:border-box">
+<div style="margin:18px 0;">
+  <label style="display:block;margin-bottom:10px;font-weight:bold;">
+    Начин на доставка *
+  </label>
 
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <label style="flex:1;min-width:130px;">
+      <input type="radio" name="courier" value="Еконт" required>
+      Еконт
+    </label>
+
+    <label style="flex:1;min-width:130px;">
+      <input type="radio" name="courier" value="Спиди">
+      Спиди
+    </label>
+  </div>
+</div>
+
+<div style="margin:18px 0;">
+  <label style="display:block;margin-bottom:10px;font-weight:bold;">
+    Получаване *
+  </label>
+
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <label style="flex:1;min-width:130px;">
+      <input type="radio" name="deliveryType" value="Офис" required>
+      До офис
+    </label>
+
+    <label style="flex:1;min-width:130px;">
+      <input type="radio" name="deliveryType" value="Адрес">
+      До адрес
+    </label>
+  </div>
+</div>
+
+<div id="officeDeliveryFields" style="display:none;margin:18px 0;">
+  <label style="display:block;margin-bottom:7px;font-weight:bold;">
+    Избран офис
+  </label>
+
+  <input
+    name="office"
+    id="officeInput"
+    placeholder="Първо изберете куриер"
+    readonly
+    style="width:100%;padding:13px;margin:7px 0;"
+  >
+
+  <button
+    type="button"
+    id="chooseOfficeBtn"
+    style="width:100%;padding:14px;border:0;background:#b88b2e;color:#fff;font-weight:bold;cursor:pointer;"
+  >
+    ИЗБЕРИ ОФИС
+  </button>
+</div>
           <label>Адрес за доставка *</label>
           <textarea required name="address" rows="3"
             style="width:100%;padding:13px;margin:7px 0 15px;box-sizing:border-box"></textarea>
@@ -582,7 +638,9 @@ async function checkout(){
 Телефон: ${data.get("phone")}
 Имейл: ${data.get("email")}
 Адрес: ${data.get("address")}
-
+Куриер: ${data.get("courier")}
+Получаване: ${data.get("deliveryType")}
+Офис: ${data.get("office") || "Не е избран"}
 Продукти:
 ${items}
 
