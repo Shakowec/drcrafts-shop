@@ -456,202 +456,144 @@ function closeCart(){document.querySelector("#cartDrawer").classList.remove("ope
 async function checkout(){
   if(!cart.length) return;
 
-  const old=document.querySelector("#checkoutModal");
+  const old = document.querySelector("#orderForm");
   if(old) old.remove();
 
-  const modal=document.createElement("div");
-  modal.id="checkoutModal";
-  modal.innerHTML=`
+  const items = cart.map(x => {
+    const p = PRODUCTS.find(p => p.id === x.id);
+    if(!p) return "";
+    return `${p.name} — ${x.qty} бр. × ${euro(p.price)}`;
+  }).filter(Boolean).join("\n");
+
+  const total = cart.reduce((sum,x) => {
+    const p = PRODUCTS.find(p => p.id === x.id);
+    return sum + (p ? Number(p.price) * x.qty : 0);
+  },0);
+
+  const form = document.createElement("div");
+  form.id = "orderForm";
+
+  form.innerHTML = `
     <div style="
       position:fixed;
       inset:0;
-      background:rgba(0,0,0,.45);
+      background:rgba(0,0,0,.55);
       z-index:9999;
       display:flex;
-      align-items:flex-end;
+      align-items:center;
       justify-content:center;
+      padding:20px;
     ">
       <div style="
         background:#fff;
         width:100%;
-        max-width:600px;
-        max-height:92vh;
+        max-width:520px;
+        max-height:90vh;
         overflow:auto;
-        padding:28px 22px 35px;
-        border-radius:22px 22px 0 0;
-        box-sizing:border-box;
+        padding:30px;
+        border-radius:4px;
       ">
-        <div style="
-          display:flex;
-          justify-content:space-between;
-          align-items:center;
-          margin-bottom:25px;
-        ">
-          <h2 style="margin:0;font-size:30px;color:#29231f">
-            Данни за поръчката
-          </h2>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <p style="color:#b58a32;letter-spacing:3px;font-size:12px">
+              DRCRAFT
+            </p>
+            <h2 style="margin:0">Данни за поръчката</h2>
+          </div>
 
-          <button id="closeCheckout"
-            style="
-              border:0;
-              background:none;
-              font-size:32px;
-              color:#b58a2c;
-              cursor:pointer;
-            ">
+          <button type="button" id="closeOrderForm"
+            style="border:0;background:none;font-size:32px;cursor:pointer">
             ×
           </button>
         </div>
 
-        <div style="display:grid;gap:15px">
+        <div style="
+          margin:25px 0;
+          padding:18px;
+          background:#f7f1e7;
+          white-space:pre-line;
+        ">
+          <strong>Вашата поръчка:</strong><br><br>
+          ${items}
+          <br><br>
+          <strong>Общо: ${euro(total)}</strong>
+        </div>
 
-          <input id="customerName"
-            type="text"
-            placeholder="Име и фамилия"
-            required
+        <form id="customerOrderForm">
+
+          <label>Име и фамилия *</label>
+          <input required name="name"
+            style="width:100%;padding:13px;margin:7px 0 15px;box-sizing:border-box">
+
+          <label>Телефон *</label>
+          <input required name="phone" type="tel"
+            style="width:100%;padding:13px;margin:7px 0 15px;box-sizing:border-box">
+
+          <label>Имейл *</label>
+          <input required name="email" type="email"
+            style="width:100%;padding:13px;margin:7px 0 15px;box-sizing:border-box">
+
+          <label>Адрес за доставка *</label>
+          <textarea required name="address" rows="3"
+            style="width:100%;padding:13px;margin:7px 0 15px;box-sizing:border-box"></textarea>
+
+          <label>Бележка към поръчката</label>
+          <textarea name="note" rows="3"
+            style="width:100%;padding:13px;margin:7px 0 20px;box-sizing:border-box"></textarea>
+
+          <button type="submit"
             style="
               width:100%;
-              box-sizing:border-box;
-              padding:15px;
-              border:1px solid #ddd;
-              border-radius:8px;
-              font-size:16px;
-            ">
-
-          <input id="customerPhone"
-            type="tel"
-            placeholder="Телефон"
-            required
-            style="
-              width:100%;
-              box-sizing:border-box;
-              padding:15px;
-              border:1px solid #ddd;
-              border-radius:8px;
-              font-size:16px;
-            ">
-
-          <input id="customerEmail"
-            type="email"
-            placeholder="Имейл"
-            required
-            style="
-              width:100%;
-              box-sizing:border-box;
-              padding:15px;
-              border:1px solid #ddd;
-              border-radius:8px;
-              font-size:16px;
-            ">
-
-          <input id="customerAddress"
-            type="text"
-            placeholder="Адрес за доставка"
-            required
-            style="
-              width:100%;
-              box-sizing:border-box;
-              padding:15px;
-              border:1px solid #ddd;
-              border-radius:8px;
-              font-size:16px;
-            ">
-
-          <textarea id="customerNote"
-            placeholder="Бележка към поръчката (по желание)"
-            rows="4"
-            style="
-              width:100%;
-              box-sizing:border-box;
-              padding:15px;
-              border:1px solid #ddd;
-              border-radius:8px;
-              font-size:16px;
-              resize:vertical;
-            "></textarea>
-
-          <button id="continueCheckout"
-            style="
-              width:100%;
-              padding:17px;
+              padding:16px;
               border:0;
-              border-radius:8px;
-              background:#b58a2c;
+              background:#b88b2e;
               color:#fff;
-              font-size:16px;
-              font-weight:700;
+              font-weight:bold;
+              font-size:15px;
               cursor:pointer;
             ">
-            ПРОДЪЛЖИ КЪМ ПЛАЩАНЕ →
+            ИЗПРАТИ ПОРЪЧКАТА →
           </button>
 
-        </div>
+        </form>
       </div>
     </div>
   `;
 
-  document.body.appendChild(modal);
+  document.body.appendChild(form);
 
-  document.querySelector("#closeCheckout").onclick=()=>{
-    modal.remove();
+  document.querySelector("#closeOrderForm").onclick = () => {
+    form.remove();
   };
 
-  document.querySelector("#continueCheckout").onclick=async()=>{
+  document.querySelector("#customerOrderForm").onsubmit = e => {
+    e.preventDefault();
 
-    const customer={
-      name:document.querySelector("#customerName").value.trim(),
-      phone:document.querySelector("#customerPhone").value.trim(),
-      email:document.querySelector("#customerEmail").value.trim(),
-      address:document.querySelector("#customerAddress").value.trim(),
-      note:document.querySelector("#customerNote").value.trim()
-    };
+    const data = new FormData(e.target);
 
-    if(!customer.name ||
-       !customer.phone ||
-       !customer.email ||
-       !customer.address){
+    const subject = encodeURIComponent(
+      "Нова поръчка от DRCraft"
+    );
 
-      alert("Моля, попълнете всички задължителни полета.");
-      return;
-    }
+    const body = encodeURIComponent(
+`НОВА ПОРЪЧКА — DRCRAFT
 
-    const btn=document.querySelector("#continueCheckout");
+Име: ${data.get("name")}
+Телефон: ${data.get("phone")}
+Имейл: ${data.get("email")}
+Адрес: ${data.get("address")}
 
-    btn.disabled=true;
-    btn.textContent="ПОДГОТВЯНЕ...";
+Продукти:
+${items}
 
-    try{
+Общо: ${euro(total)}
 
-      const r=await fetch("/api/create-checkout-session",{
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json"
-        },
-        body:JSON.stringify({
-          items:cart,
-          customer:customer
-        })
-      });
+Бележка:
+${data.get("note") || "Няма"}`
+    );
 
-      const data=await r.json();
-
-      if(data.url){
-        location.href=data.url;
-      }else{
-        throw new Error(data.error||"Checkout error");
-      }
-
-    }catch(e){
-
-      console.error(e);
-
-      alert(
-        "Възникна проблем при започване на плащането."
-      );
-
-      btn.disabled=false;
-      btn.textContent="ПРОДЪЛЖИ КЪМ ПЛАЩАНЕ →";
-    }
+    window.location.href =
+      `mailto:drcrafts1307@gmail.com?subject=${subject}&body=${body}`;
   };
 }
 document.querySelector("#cartBtn").onclick=openCart;document.querySelector("#closeCart").onclick=closeCart;document.querySelector("#overlay").onclick=closeCart;document.querySelector("#checkoutBtn").onclick=checkout;
