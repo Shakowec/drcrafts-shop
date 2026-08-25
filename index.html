@@ -569,25 +569,31 @@ async function checkout(){
 </div>
 
 <div id="officeDeliveryFields" style="display:none;margin:18px 0;">
-  <label style="display:block;margin-bottom:7px;font-weight:bold;">
-    Избран офис
+
+  <label style="display:block;margin-bottom:10px;font-weight:bold;">
+    Избран офис *
   </label>
 
   <input
+    type="text"
     name="office"
     id="officeInput"
-    placeholder="Първо изберете куриер"
+    placeholder="Изберете офис"
     readonly
-    style="width:100%;padding:13px;margin:7px 0;"
+    style="width:100%;padding:13px;margin:7px 0;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;"
   >
+
+  <input type="hidden" name="officeCode" id="officeCode">
+  <input type="hidden" name="officeCourier" id="officeCourier">
 
   <button
     type="button"
     id="chooseOfficeBtn"
-    style="width:100%;padding:14px;border:0;background:#b88b2e;color:#fff;font-weight:bold;cursor:pointer;"
+    style="width:100%;padding:14px;border:0;border-radius:8px;background:#b88b2e;color:#fff;font-weight:bold;font-size:15px;cursor:pointer;"
   >
     ИЗБЕРИ ОФИС
   </button>
+
 </div>
           <label>Адрес за доставка *</label>
           <textarea required name="address" rows="3"
@@ -612,6 +618,77 @@ async function checkout(){
           </button>
 
         </form>
+        <div id="officePicker" style="
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.65);
+  z-index:99999;
+  align-items:center;
+  justify-content:center;
+  padding:15px;
+">
+
+  <div style="
+    background:#fff;
+    width:100%;
+    max-width:700px;
+    max-height:90vh;
+    overflow:hidden;
+    border-radius:14px;
+    position:relative;
+  ">
+
+    <div style="
+      padding:18px;
+      border-bottom:1px solid #eee;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    ">
+
+      <strong id="officePickerTitle" style="font-size:20px;">
+        Избери офис
+      </strong>
+
+      <button
+        type="button"
+        id="closeOfficePicker"
+        style="
+          border:0;
+          background:none;
+          font-size:28px;
+          cursor:pointer;
+        "
+      >×</button>
+
+    </div>
+
+    <div style="padding:15px;">
+
+      <input
+        type="text"
+        id="officeSearch"
+        placeholder="Напиши град или офис..."
+        style="
+          width:100%;
+          padding:13px;
+          border:1px solid #ddd;
+          border-radius:8px;
+          box-sizing:border-box;
+          margin-bottom:12px;
+        "
+      >
+
+      <div id="officeResults" style="
+        max-height:55vh;
+        overflow-y:auto;
+      "></div>
+
+    </div>
+
+  </div>
+</div>
       </div>
     </div>
   `;
@@ -687,6 +764,251 @@ alert("Supabase error: " + JSON.stringify(error));;
 }
 
 loadProductsFromSupabase();
+    const courierInputs = document.querySelectorAll('input[name="courier"]');
+const deliveryInputs = document.querySelectorAll('input[name="deliveryType"]');
+
+const officeFields = document.getElementById("officeDeliveryFields");
+const officeInput = document.getElementById("officeInput");
+const officeCode = document.getElementById("officeCode");
+const officeCourier = document.getElementById("officeCourier");
+
+const chooseOfficeBtn = document.getElementById("chooseOfficeBtn");
+const officePicker = document.getElementById("officePicker");
+const closeOfficePicker = document.getElementById("closeOfficePicker");
+
+const officePickerTitle = document.getElementById("officePickerTitle");
+const officeSearch = document.getElementById("officeSearch");
+const officeResults = document.getElementById("officeResults");
+
+
+function getSelectedCourier() {
+  const selected = document.querySelector(
+    'input[name="courier"]:checked'
+  );
+
+  return selected ? selected.value : "";
+}
+
+
+function getSelectedDeliveryType() {
+  const selected = document.querySelector(
+    'input[name="deliveryType"]:checked'
+  );
+
+  return selected ? selected.value : "";
+}
+
+
+function updateOfficeVisibility() {
+
+  const courier = getSelectedCourier();
+  const deliveryType = getSelectedDeliveryType();
+
+  if (deliveryType === "office") {
+
+    officeFields.style.display = "block";
+
+    officePickerTitle.textContent =
+      courier === "econt"
+        ? "Избери офис на Еконт"
+        : "Избери офис на Спиди";
+
+  } else {
+
+    officeFields.style.display = "none";
+
+    officeInput.value = "";
+    officeCode.value = "";
+    officeCourier.value = "";
+  }
+}
+
+
+courierInputs.forEach(input => {
+  input.addEventListener("change", updateOfficeVisibility);
+});
+
+
+deliveryInputs.forEach(input => {
+  input.addEventListener("change", updateOfficeVisibility);
+});
+
+
+chooseOfficeBtn.addEventListener("click", function () {
+
+  const courier = getSelectedCourier();
+  const deliveryType = getSelectedDeliveryType();
+
+  if (deliveryType !== "office") {
+    alert("Първо изберете „До офис“.");
+    return;
+  }
+
+  if (!courier) {
+    alert("Моля, изберете Еконт или Спиди.");
+    return;
+  }
+
+  officePickerTitle.textContent =
+    courier === "econt"
+      ? "Избери офис на Еконт"
+      : "Избери офис на Спиди";
+
+  officePicker.style.display = "flex";
+
+  officeSearch.value = "";
+  loadDemoOffices(courier);
+});
+
+
+closeOfficePicker.addEventListener("click", function () {
+  officePicker.style.display = "none";
+});
+
+
+officePicker.addEventListener("click", function(e) {
+
+  if (e.target === officePicker) {
+    officePicker.style.display = "none";
+  }
+
+});
+
+
+function loadDemoOffices(courier) {
+
+  officeResults.innerHTML = "";
+
+  const offices = courier === "econt"
+
+    ? [
+        {
+          code: "E100",
+          name: "Еконт офис Самоков – Център",
+          address: "гр. Самоков"
+        },
+        {
+          code: "E101",
+          name: "Еконт офис Самоков – Рила",
+          address: "гр. Самоков"
+        }
+      ]
+
+    : [
+        {
+          code: "S100",
+          name: "Спиди офис Самоков – Център",
+          address: "гр. Самоков"
+        },
+        {
+          code: "S101",
+          name: "Спиди офис Самоков – Автогара",
+          address: "гр. Самоков"
+        }
+      ];
+
+
+  renderOffices(offices, courier);
+
+
+  officeSearch.oninput = function() {
+
+    const search = officeSearch.value
+      .toLowerCase()
+      .trim();
+
+    const filtered = offices.filter(office =>
+      office.name.toLowerCase().includes(search) ||
+      office.address.toLowerCase().includes(search) ||
+      office.code.toLowerCase().includes(search)
+    );
+
+    renderOffices(filtered, courier);
+  };
+}
+
+
+function renderOffices(offices, courier) {
+
+  officeResults.innerHTML = "";
+
+  if (!offices.length) {
+
+    officeResults.innerHTML = `
+      <div style="
+        padding:20px;
+        text-align:center;
+        color:#777;
+      ">
+        Няма намерени офиси.
+      </div>
+    `;
+
+    return;
+  }
+
+
+  offices.forEach(office => {
+
+    const item = document.createElement("button");
+
+    item.type = "button";
+
+    item.style.cssText = `
+      width:100%;
+      text-align:left;
+      padding:15px;
+      margin-bottom:8px;
+      background:#fff;
+      border:1px solid #ddd;
+      border-radius:10px;
+      cursor:pointer;
+    `;
+
+    item.innerHTML = `
+      <strong style="display:block;font-size:16px;">
+        ${office.name}
+      </strong>
+
+      <span style="
+        display:block;
+        margin-top:5px;
+        color:#666;
+      ">
+        ${office.address}
+      </span>
+
+      <small style="
+        display:block;
+        margin-top:5px;
+        color:#999;
+      ">
+        Код: ${office.code}
+      </small>
+    `;
+
+
+    item.addEventListener("click", function() {
+
+      officeInput.value =
+        `${office.name} (${office.code})`;
+
+      officeCode.value = office.code;
+
+      officeCourier.value = courier;
+
+      officePicker.style.display = "none";
+
+    });
+
+
+    officeResults.appendChild(item);
+
+  });
+}
+
+
+updateOfficeVisibility();
 </script>
 </body>
 </html>
