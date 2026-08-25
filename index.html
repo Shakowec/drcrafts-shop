@@ -836,28 +836,78 @@ deliveryInputs.forEach(input => {
 
 chooseOfficeBtn.addEventListener("click", function () {
 
-  const courier = getSelectedCourier();
-  const deliveryType = getSelectedDeliveryType();
+    const courier = getSelectedCourier();
 
-  if (deliveryType !== "office") {
-    alert("Първо изберете „До офис“.");
-    return;
-  }
+    if (!courier) {
+        alert("Моля, изберете куриер.");
+        return;
+    }
 
-  if (!courier) {
-    alert("Моля, изберете Еконт или Спиди.");
-    return;
-  }
+    const offices = courier === "econt"
+        ? [
+            { code: "1001", name: "Еконт – Самоков, офис Център", city: "Самоков" },
+            { code: "1002", name: "Еконт – Самоков, офис Луковица", city: "Самоков" },
+            { code: "1003", name: "Еконт – София, офис Централна гара", city: "София" },
+            { code: "1004", name: "Еконт – София, офис Младост", city: "София" },
+            { code: "1005", name: "Еконт – Бургас, офис Център", city: "Бургас" }
+        ]
+        : [
+            { code: "2001", name: "Спиди – Самоков, офис Център", city: "Самоков" },
+            { code: "2002", name: "Спиди – Самоков, офис Индустриална зона", city: "Самоков" },
+            { code: "2003", name: "Спиди – София, офис Централна гара", city: "София" },
+            { code: "2004", name: "Спиди – София, офис Младост", city: "София" },
+            { code: "2005", name: "Спиди – Бургас, офис Център", city: "Бургас" }
+        ];
 
-  officePickerTitle.textContent =
-    courier === "econt"
-      ? "Избери офис на Еконт"
-      : "Избери офис на Спиди";
+    officePickerTitle.textContent =
+        courier === "econt"
+            ? "Избери офис на Еконт"
+            : "Избери офис на Спиди";
 
-  officePicker.style.display = "flex";
+    officeResults.innerHTML = "";
 
-  officeSearch.value = "";
-  loadDemoOffices(courier);
+    offices.forEach(office => {
+
+        const item = document.createElement("button");
+
+        item.type = "button";
+
+        item.style.cssText = `
+            width:100%;
+            text-align:left;
+            padding:15px;
+            margin-bottom:10px;
+            border:1px solid #ddd;
+            border-radius:8px;
+            background:#fff;
+            cursor:pointer;
+            font-size:15px;
+        `;
+
+        item.innerHTML = `
+            <strong>${office.name}</strong><br>
+            <span style="color:#777;">
+                ${office.city} · Код ${office.code}
+            </span>
+        `;
+
+        item.addEventListener("click", function () {
+
+            officeInput.value = office.name;
+            officeCode.value = office.code;
+            officeCourier.value = courier;
+
+            officePicker.style.display = "none";
+
+        });
+
+        officeResults.appendChild(item);
+    });
+
+    officePicker.style.display = "flex";
+
+    officeSearch.value = "";
+
 });
 
 
