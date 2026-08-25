@@ -801,26 +801,64 @@ function getSelectedDeliveryType() {
 
 function updateOfficeVisibility() {
 
-  const courier = getSelectedCourier();
-  const deliveryType = getSelectedDeliveryType();
+    const courier = getSelectedCourier();
 
-  if (deliveryType === "office") {
+    const selectedDelivery = document.querySelector(
+        'input[name="deliveryType"]:checked'
+    );
 
-    officeFields.style.display = "block";
+    const deliveryType = selectedDelivery
+        ? selectedDelivery.value.toLowerCase()
+        : "";
 
-    officePickerTitle.textContent =
-      courier === "econt"
-        ? "Избери офис на Еконт"
-        : "Избери офис на Спиди";
+    const isOffice = deliveryType.includes("office");
 
-  } else {
+    const addressTextarea = document.querySelector(
+        'textarea[name="address"]'
+    );
 
-    officeFields.style.display = "none";
+    const addressLabel = addressTextarea
+        ? addressTextarea.previousElementSibling
+        : null;
 
-    officeInput.value = "";
-    officeCode.value = "";
-    officeCourier.value = "";
-  }
+    if (isOffice) {
+
+        // Показваме избора на офис
+        officeFields.style.display = "block";
+
+        // Заглавие според куриера
+        officePickerTitle.textContent =
+            courier === "econt"
+                ? "Избери офис на Еконт"
+                : "Избери офис на Спиди";
+
+        // Скриваме адреса, защото получаването е до офис
+        if (addressTextarea) {
+            addressTextarea.style.display = "none";
+        }
+
+        if (addressLabel) {
+            addressLabel.style.display = "none";
+        }
+
+    } else {
+
+        // Скриваме избора на офис
+        officeFields.style.display = "none";
+
+        officeInput.value = "";
+        officeCode.value = "";
+        officeCourier.value = "";
+
+        // Показваме адреса
+        if (addressTextarea) {
+            addressTextarea.style.display = "block";
+        }
+
+        if (addressLabel) {
+            addressLabel.style.display = "block";
+        }
+    }
 }
 
 
@@ -833,6 +871,7 @@ deliveryInputs.forEach(input => {
   input.addEventListener("change", updateOfficeVisibility);
 });
 
+    updateOfficeVisibility();
 
 chooseOfficeBtn.addEventListener("click", function () {
 
