@@ -812,37 +812,35 @@ function updateOfficeVisibility() {
 
     const isOffice = deliveryType.includes("office");
 
-    const addressInput = addressField.querySelector("textarea, input");
 
     if (isOffice) {
 
-        // Показваме избора на офис
-        officeFields.style.display = "block";
+    // До офис – скриваме адреса и го правим незадължителен
+    addressField.style.display = "none";
+    addressLabel.style.display = "none";
 
-        // Скриваме целия адрес
-        addressField.style.display = "none";
+    addressField.required = false;
+    addressField.removeAttribute("required");
+    addressField.value = "";
 
-        // Адресът вече НЕ е задължителен
-        if (addressInput) {
-            addressInput.required = false;
-            addressInput.removeAttribute("required");
-            addressInput.value = "";
-        }
+    // Показваме избора на офис
+    officeFields.style.display = "block";
 
-    } else {
+} else {
 
-        // Скриваме избора на офис
-        officeFields.style.display = "none";
+    // До адрес – показваме адреса и го правим задължителен
+    addressField.style.display = "block";
+    addressLabel.style.display = "block";
 
-        // Показваме целия адрес
-        addressField.style.display = "block";
+    addressField.required = true;
+    addressField.setAttribute("required", "");
 
-        // Адресът е задължителен
-        if (addressInput) {
-            addressInput.required = true;
-            addressInput.setAttribute("required", "required");
-        }
-    }
+    // Скриваме избора на офис
+    officeFields.style.display = "none";
+
+    officeInput.value = "";
+    officeCode.value = "";
+    officeCourier.value = "";
 }
 
 
