@@ -595,9 +595,17 @@ async function checkout(){
   </button>
 
 </div>
-          <label>Адрес за доставка *</label>
-          <textarea id="addressField" required name="address"
-            style="width:100%;padding:13px;margin:7px 0 15px;box-sizing:border-box"></textarea>
+
+          <label id="addressLabel">Адрес за доставка *</label>
+
+<textarea
+    id="addressField"
+    name="address"
+    required
+    rows="3"
+    placeholder="Въведете точен адрес за доставка"
+    style="width:100%;padding:13px;margin-top:8px;box-sizing:border-box;"
+></textarea>
 
           <label>Бележка към поръчката</label>
           <textarea name="note" rows="3"
@@ -813,13 +821,7 @@ function updateOfficeVisibility() {
 
     const isOffice = deliveryType.includes("office");
 
-    const addressTextarea = document.querySelector(
-        'textarea[name="address"]'
-    );
-
-    const addressLabel = addressTextarea
-        ? addressTextarea.previousElementSibling
-        : null;
+    
 
     if (isOffice) {
 
@@ -833,14 +835,13 @@ function updateOfficeVisibility() {
                 : "Избери офис на Спиди";
 
         // Скриваме адреса, защото получаването е до офис
-        if (addressTextarea) {
-            addressTextarea.style.display = "none";
-        }
+      // Скриваме адреса при получаване до офис
+addressTextarea.style.display = "none";
+addressLabel.style.display = "none";
 
-        if (addressLabel) {
-            addressLabel.style.display = "none";
-        }
-
+// Адресът вече не е задължителен
+addressTextarea.required = false;
+addressTextarea.value = "";
     } else {
 
         // Скриваме избора на офис
@@ -850,13 +851,12 @@ function updateOfficeVisibility() {
         officeCode.value = "";
         officeCourier.value = "";
 
-        // Показваме адреса
-        if (addressTextarea) {
-            addressTextarea.style.display = "block";
-        }
+       // Показваме адреса при доставка до адрес
+addressTextarea.style.display = "block";
+addressLabel.style.display = "block";
 
-        if (addressLabel) {
-            addressLabel.style.display = "block";
+// Адресът отново е задължителен
+addressTextarea.required = true;
         }
     }
 }
