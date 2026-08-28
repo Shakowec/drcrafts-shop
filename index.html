@@ -544,18 +544,92 @@ async function checkout(){
               font-size:16px;
             ">
 
-          <input id="customerAddress"
-            type="text"
-            placeholder="Адрес за доставка"
-            required
-            style="
-              width:100%;
-              box-sizing:border-box;
-              padding:15px;
-              border:1px solid #ddd;
-              border-radius:8px;
-              font-size:16px;
-            ">
+          <div style="grid-column:1/-1; margin-top:5px;">
+
+    <div style="font-weight:700; font-size:18px; margin-bottom:12px;">
+        Получаване *
+    </div>
+
+    <div style="display:flex; gap:25px; flex-wrap:wrap; margin-bottom:15px;">
+
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+            <input type="radio"
+                   name="deliveryMethod"
+                   id="deliveryToAddress"
+                   value="address"
+                   checked>
+            До адрес
+        </label>
+
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+            <input type="radio"
+                   name="deliveryMethod"
+                   id="deliveryToOffice"
+                   value="office">
+            До офис
+        </label>
+
+    </div>
+
+    <div id="addressDeliveryBox">
+
+        <input id="customerAddress"
+               type="text"
+               placeholder="Адрес за доставка *"
+               required
+               style="
+                   width:100%;
+                   box-sizing:border-box;
+                   padding:15px;
+                   border:1px solid #ddd;
+                   border-radius:8px;
+                   font-size:16px;
+               ">
+
+    </div>
+
+    <div id="officeDeliveryBox"
+         style="display:none; margin-top:15px;">
+
+        <div style="font-weight:700; font-size:18px; margin-bottom:12px;">
+            Избери куриер *
+        </div>
+
+        <div style="display:flex; gap:25px; flex-wrap:wrap; margin-bottom:15px;">
+
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="radio"
+                       name="courier"
+                       id="courierEcont"
+                       value="Еконт">
+                Еконт
+            </label>
+
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="radio"
+                       name="courier"
+                       id="courierSpeedy"
+                       value="Спиди">
+                Спиди
+            </label>
+
+        </div>
+
+        <select id="officeSelect"
+                style="
+                    width:100%;
+                    box-sizing:border-box;
+                    padding:15px;
+                    border:1px solid #ddd;
+                    border-radius:8px;
+                    font-size:16px;
+                ">
+            <option value="">Първо избери куриер</option>
+        </select>
+
+    </div>
+
+</div>
 
           <textarea id="customerNote"
             placeholder="Бележка към поръчката (по желание)"
@@ -591,6 +665,108 @@ async function checkout(){
   `;
 
   document.body.appendChild(modal);
+  // Логика за доставка
+const deliveryToAddress = modal.querySelector("#deliveryToAddress");
+const deliveryToOffice = modal.querySelector("#deliveryToOffice");
+
+const addressDeliveryBox = modal.querySelector("#addressDeliveryBox");
+const officeDeliveryBox = modal.querySelector("#officeDeliveryBox");
+
+const customerAddress = modal.querySelector("#customerAddress");
+
+const courierEcont = modal.querySelector("#courierEcont");
+const courierSpeedy = modal.querySelector("#courierSpeedy");
+const officeSelect = modal.querySelector("#officeSelect");
+
+function updateDeliveryOptions() {
+
+    if (deliveryToAddress.checked) {
+
+        // До адрес
+        addressDeliveryBox.style.display = "block";
+        officeDeliveryBox.style.display = "none";
+
+        customerAddress.required = true;
+
+        courierEcont.checked = false;
+        courierSpeedy.checked = false;
+        officeSelect.value = "";
+
+    } else {
+
+        // До офис
+        addressDeliveryBox.style.display = "none";
+        officeDeliveryBox.style.display = "block";
+
+        customerAddress.required = false;
+        customerAddress.value = "";
+
+    }
+}
+
+deliveryToAddress.addEventListener("change", updateDeliveryOptions);
+deliveryToOffice.addEventListener("change", updateDeliveryOptions);
+
+
+// Засега примерни офиси.
+// По-късно ще ги заменим с API на Еконт и Спиди.
+const offices = {
+
+    "Еконт": [
+        "Еконт – Бургас Център",
+        "Еконт – Бургас Изгрев",
+        "Еконт – Бургас Меден рудник"
+    ],
+
+    "Спиди": [
+        "Спиди – Бургас Център",
+        "Спиди – Бургас Изгрев",
+        "Спиди – Бургас Меден рудник"
+    ]
+
+};
+
+function updateOffices() {
+
+    const courier = courierEcont.checked
+        ? "Еконт"
+        : courierSpeedy.checked
+            ? "Спиди"
+            : "";
+
+    officeSelect.innerHTML = "";
+
+    if (!courier) {
+
+        officeSelect.innerHTML =
+            '<option value="">Първо избери куриер</option>';
+
+        officeSelect.required = false;
+
+        return;
+    }
+
+    officeSelect.innerHTML =
+        '<option value="">Избери офис *</option>';
+
+    offices[courier].forEach(function(office) {
+
+        const option = document.createElement("option");
+
+        option.value = office;
+        option.textContent = office;
+
+        officeSelect.appendChild(option);
+
+    });
+
+    officeSelect.required = true;
+}
+
+courierEcont.addEventListener("change", updateOffices);
+courierSpeedy.addEventListener("change", updateOffices);
+
+updateDeliveryOptions();
 
   document.querySelector("#closeCheckout").onclick=()=>{
     modal.remove();
@@ -598,22 +774,52 @@ async function checkout(){
 
   document.querySelector("#continueCheckout").onclick=async()=>{
 
-    const customer={
-      name:document.querySelector("#customerName").value.trim(),
-      phone:document.querySelector("#customerPhone").value.trim(),
-      email:document.querySelector("#customerEmail").value.trim(),
-      address:document.querySelector("#customerAddress").value.trim(),
-      note:document.querySelector("#customerNote").value.trim()
-    };
+    const customer = {
+    name: document.querySelector("#customerName"),
+    phone: document.querySelector("#customerPhone"),
+    email: document.querySelector("#customerEmail"),
+    address: document.querySelector("#customerAddress"),
+    note: document.querySelector("#customerNote"),
 
-    if(!customer.name ||
-       !customer.phone ||
-       !customer.email ||
-       !customer.address){
+    deliveryMethod: document.querySelector('input[name="deliveryMethod"]:checked')?.value || "",
+    courier: document.querySelector('input[name="courier"]:checked')?.value || "",
+    office: document.querySelector("#officeSelect")?.value || ""
+};
 
-      alert("Моля, попълнете всички задължителни полета.");
-      return;
+
+// Проверка на основните данни
+if (!customer.name.value ||
+    !customer.phone.value ||
+    !customer.email.value) {
+
+    alert("Моля, попълнете всички задължителни полета.");
+    return;
+}
+
+
+// Ако е избрано ДО АДРЕС — адресът е задължителен
+if (customer.deliveryMethod === "address" &&
+    !customer.address.value.trim()) {
+
+    alert("Моля, въведете адрес за доставка.");
+    customer.address.focus();
+    return;
+}
+
+
+// Ако е избрано ДО ОФИС — трябва да има куриер и офис
+if (customer.deliveryMethod === "office") {
+
+    if (!customer.courier) {
+        alert("Моля, изберете куриер – Еконт или Спиди.");
+        return;
     }
+
+    if (!customer.office) {
+        alert("Моля, изберете офис на " + customer.courier + ".");
+        return;
+    }
+}
 
     const btn=document.querySelector("#continueCheckout");
 
