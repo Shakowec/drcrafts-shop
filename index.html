@@ -808,55 +808,39 @@ function getSelectedDeliveryType() {
 
 
 function updateOfficeVisibility() {
-
-    const courier = getSelectedCourier();
-
-    const selectedDelivery = document.querySelector(
-        'input[name="deliveryType"]:checked'
-    );
-
-    const deliveryType = selectedDelivery
-        ? selectedDelivery.value.toLowerCase()
-        : "";
+    const deliveryType = getSelectedDeliveryType();
 
     const isOffice = deliveryType.includes("office");
 
-    
+    const addressInput = addressField.querySelector("textarea, input");
 
     if (isOffice) {
 
         // Показваме избора на офис
         officeFields.style.display = "block";
 
-        // Заглавие според куриера
-        officePickerTitle.textContent =
-            courier === "econt"
-                ? "Избери офис на Еконт"
-                : "Избери офис на Спиди";
+        // Скриваме целия адрес
+        addressField.style.display = "none";
 
-        // Скриваме адреса, защото получаването е до офис
-      // Скриваме адреса при получаване до офис
-addressTextarea.style.display = "none";
-addressLabel.style.display = "none";
+        // Адресът вече НЕ е задължителен
+        if (addressInput) {
+            addressInput.required = false;
+            addressInput.removeAttribute("required");
+            addressInput.value = "";
+        }
 
-// Адресът вече не е задължителен
-addressTextarea.required = false;
-addressTextarea.value = "";
     } else {
 
         // Скриваме избора на офис
         officeFields.style.display = "none";
 
-        officeInput.value = "";
-        officeCode.value = "";
-        officeCourier.value = "";
+        // Показваме целия адрес
+        addressField.style.display = "block";
 
-       // Показваме адреса при доставка до адрес
-addressTextarea.style.display = "block";
-addressLabel.style.display = "block";
-
-// Адресът отново е задължителен
-addressTextarea.required = true;
+        // Адресът е задължителен
+        if (addressInput) {
+            addressInput.required = true;
+            addressInput.setAttribute("required", "required");
         }
     }
 }
