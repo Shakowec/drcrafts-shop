@@ -456,287 +456,202 @@ function closeCart(){document.querySelector("#cartDrawer").classList.remove("ope
 async function checkout(){
   if(!cart.length) return;
 
-  const old = document.querySelector("#orderForm");
+  const old=document.querySelector("#checkoutModal");
   if(old) old.remove();
 
-  const items = cart.map(x => {
-    const p = PRODUCTS.find(p => p.id === x.id);
-    if(!p) return "";
-    return `${p.name} — ${x.qty} бр. × ${euro(p.price)}`;
-  }).filter(Boolean).join("\n");
-
-  const total = cart.reduce((sum,x) => {
-    const p = PRODUCTS.find(p => p.id === x.id);
-    return sum + (p ? Number(p.price) * x.qty : 0);
-  },0);
-
-  const form = document.createElement("div");
-  form.id = "orderForm";
-
-  form.innerHTML = `
+  const modal=document.createElement("div");
+  modal.id="checkoutModal";
+  modal.innerHTML=`
     <div style="
       position:fixed;
       inset:0;
-      background:rgba(0,0,0,.55);
+      background:rgba(0,0,0,.45);
       z-index:9999;
       display:flex;
-      align-items:center;
+      align-items:flex-end;
       justify-content:center;
-      padding:20px;
     ">
       <div style="
         background:#fff;
         width:100%;
-        max-width:520px;
-        max-height:90vh;
+        max-width:600px;
+        max-height:92vh;
         overflow:auto;
-        padding:30px;
-        border-radius:4px;
+        padding:28px 22px 35px;
+        border-radius:22px 22px 0 0;
+        box-sizing:border-box;
       ">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <p style="color:#b58a32;letter-spacing:3px;font-size:12px">
-              DRCRAFT
-            </p>
-            <h2 style="margin:0">Данни за поръчката</h2>
-          </div>
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          margin-bottom:25px;
+        ">
+          <h2 style="margin:0;font-size:30px;color:#29231f">
+            Данни за поръчката
+          </h2>
 
-          <button type="button" id="closeOrderForm"
-            style="border:0;background:none;font-size:32px;cursor:pointer">
+          <button id="closeCheckout"
+            style="
+              border:0;
+              background:none;
+              font-size:32px;
+              color:#b58a2c;
+              cursor:pointer;
+            ">
             ×
           </button>
         </div>
 
-        <div style="
-          margin:25px 0;
-          padding:18px;
-          background:#f7f1e7;
-          white-space:pre-line;
-        ">
-          <strong>Вашата поръчка:</strong><br><br>
-          ${items}
-          <br><br>
-          <strong>Общо: ${euro(total)}</strong>
-        </div>
+        <div style="display:grid;gap:15px">
 
-        <form id="customerOrderForm">
-
-          <label>Име и фамилия *</label>
-          <input required name="name"
-            style="width:100%;padding:13px;margin:7px 0 15px;box-sizing:border-box">
-
-          <label>Телефон *</label>
-          <input required name="phone" type="tel"
-            style="width:100%;padding:13px;margin:7px 0 15px;box-sizing:border-box">
-
-          <label>Имейл *</label>
-          <input required name="email" type="email"
-            style="width:100%;padding:13px;margin:7px 0 15px;box-sizing:border-box">
-<div style="margin:18px 0;">
-  <label style="display:block;margin-bottom:10px;font-weight:bold;">
-    Начин на доставка *
-  </label>
-
-  <div style="display:flex;gap:10px;flex-wrap:wrap;">
-    <label style="flex:1;min-width:130px;">
-      <input type="radio" name="courier" value="Еконт" required>
-      Еконт
-    </label>
-
-    <label style="flex:1;min-width:130px;">
-      <input type="radio" name="courier" value="Спиди">
-      Спиди
-    </label>
-  </div>
-</div>
-
-<div style="margin:18px 0;">
-  <label style="display:block;margin-bottom:10px;font-weight:bold;">
-    Получаване *
-  </label>
-
-  <div style="display:flex;gap:10px;flex-wrap:wrap;">
-    <label style="flex:1;min-width:130px;">
-      <input type="radio" name="deliveryType" value="Офис" required>
-      До офис
-    </label>
-
-    <label style="flex:1;min-width:130px;">
-      <input type="radio" name="deliveryType" value="Адрес">
-      До адрес
-    </label>
-  </div>
-</div>
-
-<div id="officeDeliveryFields" style="display:none;margin:18px 0;">
-
-  <label style="display:block;margin-bottom:10px;font-weight:bold;">
-    Избран офис *
-  </label>
-
-  <input
-    type="text"
-    name="office"
-    id="officeInput"
-    placeholder="Изберете офис"
-    readonly
-    style="width:100%;padding:13px;margin:7px 0;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;"
-  >
-
-  <input type="hidden" name="officeCode" id="officeCode">
-  <input type="hidden" name="officeCourier" id="officeCourier">
-
-  <button
-    type="button"
-    id="chooseOfficeBtn"
-    style="width:100%;padding:14px;border:0;border-radius:8px;background:#b88b2e;color:#fff;font-weight:bold;font-size:15px;cursor:pointer;"
-  >
-    ИЗБЕРИ ОФИС
-  </button>
-
-</div>
-
-          <label id="addressLabel">Адрес за доставка *</label>
-
-<textarea
-    id="addressField"
-    name="address"
-    required
-    rows="3"
-    placeholder="Въведете точен адрес за доставка"
-    style="width:100%;padding:13px;margin-top:8px;box-sizing:border-box;"
-></textarea>
-
-          <label>Бележка към поръчката</label>
-          <textarea name="note" rows="3"
-            style="width:100%;padding:13px;margin:7px 0 20px;box-sizing:border-box"></textarea>
-
-          <button type="submit"
+          <input id="customerName"
+            type="text"
+            placeholder="Име и фамилия"
+            required
             style="
               width:100%;
-              padding:16px;
+              box-sizing:border-box;
+              padding:15px;
+              border:1px solid #ddd;
+              border-radius:8px;
+              font-size:16px;
+            ">
+
+          <input id="customerPhone"
+            type="tel"
+            placeholder="Телефон"
+            required
+            style="
+              width:100%;
+              box-sizing:border-box;
+              padding:15px;
+              border:1px solid #ddd;
+              border-radius:8px;
+              font-size:16px;
+            ">
+
+          <input id="customerEmail"
+            type="email"
+            placeholder="Имейл"
+            required
+            style="
+              width:100%;
+              box-sizing:border-box;
+              padding:15px;
+              border:1px solid #ddd;
+              border-radius:8px;
+              font-size:16px;
+            ">
+
+          <input id="customerAddress"
+            type="text"
+            placeholder="Адрес за доставка"
+            required
+            style="
+              width:100%;
+              box-sizing:border-box;
+              padding:15px;
+              border:1px solid #ddd;
+              border-radius:8px;
+              font-size:16px;
+            ">
+
+          <textarea id="customerNote"
+            placeholder="Бележка към поръчката (по желание)"
+            rows="4"
+            style="
+              width:100%;
+              box-sizing:border-box;
+              padding:15px;
+              border:1px solid #ddd;
+              border-radius:8px;
+              font-size:16px;
+              resize:vertical;
+            "></textarea>
+
+          <button id="continueCheckout"
+            style="
+              width:100%;
+              padding:17px;
               border:0;
-              background:#b88b2e;
+              border-radius:8px;
+              background:#b58a2c;
               color:#fff;
-              font-weight:bold;
-              font-size:15px;
+              font-size:16px;
+              font-weight:700;
               cursor:pointer;
             ">
-            ИЗПРАТИ ПОРЪЧКАТА →
+            ПРОДЪЛЖИ КЪМ ПЛАЩАНЕ →
           </button>
 
-        </form>
-        <div id="officePicker" style="
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.65);
-  z-index:99999;
-  align-items:center;
-  justify-content:center;
-  padding:15px;
-">
-
-  <div style="
-    background:#fff;
-    width:100%;
-    max-width:700px;
-    max-height:90vh;
-    overflow:hidden;
-    border-radius:14px;
-    position:relative;
-  ">
-
-    <div style="
-      padding:18px;
-      border-bottom:1px solid #eee;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-    ">
-
-      <strong id="officePickerTitle" style="font-size:20px;">
-        Избери офис
-      </strong>
-
-      <button
-        type="button"
-        id="closeOfficePicker"
-        style="
-          border:0;
-          background:none;
-          font-size:28px;
-          cursor:pointer;
-        "
-      >×</button>
-
-    </div>
-
-    <div style="padding:15px;">
-
-      <input
-        type="text"
-        id="officeSearch"
-        placeholder="Напиши град или офис..."
-        style="
-          width:100%;
-          padding:13px;
-          border:1px solid #ddd;
-          border-radius:8px;
-          box-sizing:border-box;
-          margin-bottom:12px;
-        "
-      >
-
-      <div id="officeResults" style="
-        max-height:55vh;
-        overflow-y:auto;
-      "></div>
-
-    </div>
-
-  </div>
-</div>
+        </div>
       </div>
     </div>
   `;
 
-  document.body.appendChild(form);
+  document.body.appendChild(modal);
 
-  document.querySelector("#closeOrderForm").onclick = () => {
-    form.remove();
+  document.querySelector("#closeCheckout").onclick=()=>{
+    modal.remove();
   };
 
-  document.querySelector("#customerOrderForm").onsubmit = e => {
-    e.preventDefault();
+  document.querySelector("#continueCheckout").onclick=async()=>{
 
-    const data = new FormData(e.target);
+    const customer={
+      name:document.querySelector("#customerName").value.trim(),
+      phone:document.querySelector("#customerPhone").value.trim(),
+      email:document.querySelector("#customerEmail").value.trim(),
+      address:document.querySelector("#customerAddress").value.trim(),
+      note:document.querySelector("#customerNote").value.trim()
+    };
 
-    const subject = encodeURIComponent(
-      "Нова поръчка от DRCraft"
-    );
+    if(!customer.name ||
+       !customer.phone ||
+       !customer.email ||
+       !customer.address){
 
-    const body = encodeURIComponent(
-`НОВА ПОРЪЧКА — DRCRAFT
+      alert("Моля, попълнете всички задължителни полета.");
+      return;
+    }
 
-Име: ${data.get("name")}
-Телефон: ${data.get("phone")}
-Имейл: ${data.get("email")}
-Адрес: ${data.get("address")}
-Куриер: ${data.get("courier")}
-Получаване: ${data.get("deliveryType")}
-Офис: ${data.get("office") || "Не е избран"}
-Продукти:
-${items}
+    const btn=document.querySelector("#continueCheckout");
 
-Общо: ${euro(total)}
+    btn.disabled=true;
+    btn.textContent="ПОДГОТВЯНЕ...";
 
-Бележка:
-${data.get("note") || "Няма"}`
-    );
+    try{
 
-    window.location.href =
-      `mailto:drcrafts1307@gmail.com?subject=${subject}&body=${body}`;
+      const r=await fetch("/api/create-checkout-session",{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          items:cart,
+          customer:customer
+        })
+      });
+
+      const data=await r.json();
+
+      if(data.url){
+        location.href=data.url;
+      }else{
+        throw new Error(data.error||"Checkout error");
+      }
+
+    }catch(e){
+
+      console.error(e);
+
+      alert(
+        "Възникна проблем при започване на плащането."
+      );
+
+      btn.disabled=false;
+      btn.textContent="ПРОДЪЛЖИ КЪМ ПЛАЩАНЕ →";
+    }
   };
 }
 document.querySelector("#cartBtn").onclick=openCart;document.querySelector("#closeCart").onclick=closeCart;document.querySelector("#overlay").onclick=closeCart;document.querySelector("#checkoutBtn").onclick=checkout;
@@ -772,314 +687,6 @@ alert("Supabase error: " + JSON.stringify(error));;
 }
 
 loadProductsFromSupabase();
-    const courierInputs = document.querySelectorAll('input[name="courier"]');
-const deliveryInputs = document.querySelectorAll('input[name="deliveryType"]');
-
-const officeFields = document.getElementById("officeDeliveryFields");
-const officeInput = document.getElementById("officeInput");
-const officeCode = document.getElementById("officeCode");
-const officeCourier = document.getElementById("officeCourier");
-const addressField = document.getElementById("addressField");
-const chooseOfficeBtn = document.getElementById("chooseOfficeBtn");
-const officePicker = document.getElementById("officePicker");
-const closeOfficePicker = document.getElementById("closeOfficePicker");
-
-const officePickerTitle = document.getElementById("officePickerTitle");
-const officeSearch = document.getElementById("officeSearch");
-const officeResults = document.getElementById("officeResults");
-
-
-function getSelectedCourier() {
-  const selected = document.querySelector(
-    'input[name="courier"]:checked'
-  );
-
-  return selected ? selected.value : "";
-}
-
-
-function getSelectedDeliveryType() {
-  const selected = document.querySelector(
-    'input[name="deliveryType"]:checked'
-  );
-
-  return selected ? selected.value : "";
-}
-
-
-function updateOfficeVisibility() {
-    const deliveryType = getSelectedDeliveryType();
-
-    const isOffice = deliveryType.includes("office");
-
-
-    if (isOffice) {
-
-    // До офис – скриваме адреса и го правим незадължителен
-    addressField.style.display = "none";
-    addressLabel.style.display = "none";
-
-    addressField.required = false;
-    addressField.removeAttribute("required");
-    addressField.value = "";
-
-    // Показваме избора на офис
-    officeFields.style.display = "block";
-
-} else {
-
-    // До адрес – показваме адреса и го правим задължителен
-    addressField.style.display = "block";
-    addressLabel.style.display = "block";
-
-    addressField.required = true;
-    addressField.setAttribute("required", "");
-
-    // Скриваме избора на офис
-    officeFields.style.display = "none";
-
-    officeInput.value = "";
-    officeCode.value = "";
-    officeCourier.value = "";
-}
-
-
-courierInputs.forEach(input => {
-  input.addEventListener("change", updateOfficeVisibility);
-});
-
-
-deliveryInputs.forEach(input => {
-  input.addEventListener("change", updateOfficeVisibility);
-});
-
-    updateOfficeVisibility();
-
-chooseOfficeBtn.addEventListener("click", function () {
-
-    const courier = getSelectedCourier();
-
-    if (!courier) {
-        alert("Моля, изберете куриер.");
-        return;
-    }
-
-    const offices = courier === "econt"
-        ? [
-            { code: "1001", name: "Еконт – Самоков, офис Център", city: "Самоков" },
-            { code: "1002", name: "Еконт – Самоков, офис Луковица", city: "Самоков" },
-            { code: "1003", name: "Еконт – София, офис Централна гара", city: "София" },
-            { code: "1004", name: "Еконт – София, офис Младост", city: "София" },
-            { code: "1005", name: "Еконт – Бургас, офис Център", city: "Бургас" }
-        ]
-        : [
-            { code: "2001", name: "Спиди – Самоков, офис Център", city: "Самоков" },
-            { code: "2002", name: "Спиди – Самоков, офис Индустриална зона", city: "Самоков" },
-            { code: "2003", name: "Спиди – София, офис Централна гара", city: "София" },
-            { code: "2004", name: "Спиди – София, офис Младост", city: "София" },
-            { code: "2005", name: "Спиди – Бургас, офис Център", city: "Бургас" }
-        ];
-
-    officePickerTitle.textContent =
-        courier === "econt"
-            ? "Избери офис на Еконт"
-            : "Избери офис на Спиди";
-
-    officeResults.innerHTML = "";
-
-    offices.forEach(office => {
-
-        const item = document.createElement("button");
-
-        item.type = "button";
-
-        item.style.cssText = `
-            width:100%;
-            text-align:left;
-            padding:15px;
-            margin-bottom:10px;
-            border:1px solid #ddd;
-            border-radius:8px;
-            background:#fff;
-            cursor:pointer;
-            font-size:15px;
-        `;
-
-        item.innerHTML = `
-            <strong>${office.name}</strong><br>
-            <span style="color:#777;">
-                ${office.city} · Код ${office.code}
-            </span>
-        `;
-
-        item.addEventListener("click", function () {
-
-            officeInput.value = office.name;
-            officeCode.value = office.code;
-            officeCourier.value = courier;
-
-            officePicker.style.display = "none";
-
-        });
-
-        officeResults.appendChild(item);
-    });
-
-    officePicker.style.display = "flex";
-
-    officeSearch.value = "";
-
-});
-
-
-closeOfficePicker.addEventListener("click", function () {
-  officePicker.style.display = "none";
-});
-
-
-officePicker.addEventListener("click", function(e) {
-
-  if (e.target === officePicker) {
-    officePicker.style.display = "none";
-  }
-
-});
-
-
-function loadDemoOffices(courier) {
-
-  officeResults.innerHTML = "";
-
-  const offices = courier === "econt"
-
-    ? [
-        {
-          code: "E100",
-          name: "Еконт офис Самоков – Център",
-          address: "гр. Самоков"
-        },
-        {
-          code: "E101",
-          name: "Еконт офис Самоков – Рила",
-          address: "гр. Самоков"
-        }
-      ]
-
-    : [
-        {
-          code: "S100",
-          name: "Спиди офис Самоков – Център",
-          address: "гр. Самоков"
-        },
-        {
-          code: "S101",
-          name: "Спиди офис Самоков – Автогара",
-          address: "гр. Самоков"
-        }
-      ];
-
-
-  renderOffices(offices, courier);
-
-
-  officeSearch.oninput = function() {
-
-    const search = officeSearch.value
-      .toLowerCase()
-      .trim();
-
-    const filtered = offices.filter(office =>
-      office.name.toLowerCase().includes(search) ||
-      office.address.toLowerCase().includes(search) ||
-      office.code.toLowerCase().includes(search)
-    );
-
-    renderOffices(filtered, courier);
-  };
-}
-
-
-function renderOffices(offices, courier) {
-
-  officeResults.innerHTML = "";
-
-  if (!offices.length) {
-
-    officeResults.innerHTML = `
-      <div style="
-        padding:20px;
-        text-align:center;
-        color:#777;
-      ">
-        Няма намерени офиси.
-      </div>
-    `;
-
-    return;
-  }
-
-
-  offices.forEach(office => {
-
-    const item = document.createElement("button");
-
-    item.type = "button";
-
-    item.style.cssText = `
-      width:100%;
-      text-align:left;
-      padding:15px;
-      margin-bottom:8px;
-      background:#fff;
-      border:1px solid #ddd;
-      border-radius:10px;
-      cursor:pointer;
-    `;
-
-    item.innerHTML = `
-      <strong style="display:block;font-size:16px;">
-        ${office.name}
-      </strong>
-
-      <span style="
-        display:block;
-        margin-top:5px;
-        color:#666;
-      ">
-        ${office.address}
-      </span>
-
-      <small style="
-        display:block;
-        margin-top:5px;
-        color:#999;
-      ">
-        Код: ${office.code}
-      </small>
-    `;
-
-
-    item.addEventListener("click", function() {
-
-      officeInput.value =
-        `${office.name} (${office.code})`;
-
-      officeCode.value = office.code;
-
-      officeCourier.value = courier;
-
-      officePicker.style.display = "none";
-
-    });
-
-
-    officeResults.appendChild(item);
-
-  });
-}
-
-
-updateOfficeVisibility();
 </script>
 </body>
 </html>
