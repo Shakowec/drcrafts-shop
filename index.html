@@ -710,7 +710,8 @@ const customerAddress = modal.querySelector("#customerAddress");
 const courierEcont = modal.querySelector("#courierEcont");
 const courierSpeedy = modal.querySelector("#courierSpeedy");
 const officeSelect = modal.querySelector("#officeSelect");
-
+const paymentCard = modal.querySelector("#paymentCard");
+const paymentCashOnDelivery = modal.querySelector("#paymentCashOnDelivery");
 function updateDeliveryOptions() {
 
     if (deliveryToAddress.checked) {
@@ -860,7 +861,18 @@ if (customer.deliveryMethod === "office") {
     btn.textContent="ПОДГОТВЯНЕ...";
 
     try{
+const selectedPayment = modal.querySelector(
+    'input[name="paymentMethod"]:checked'
+)?.value;
 
+if (selectedPayment === "cash_on_delivery") {
+    alert("Поръчката е приета с наложен платеж!");
+    modal.remove();
+    cart = [];
+    localStorage.removeItem("cart");
+    renderCart();
+    return;
+}
       const r=await fetch("/api/create-checkout-session",{
         method:"POST",
         headers:{
