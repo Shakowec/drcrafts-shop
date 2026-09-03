@@ -865,7 +865,7 @@ const selectedPayment = modal.querySelector(
     'input[name="paymentMethod"]:checked'
 )?.value;
 
-if (payment === "cash_on_delivery") {
+if (selectedPayment === "cash_on_delivery") {
     alert("Поръчката е приета с наложен платеж!");
 }
       const r=await fetch("/api/create-checkout-session",{
