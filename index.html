@@ -867,14 +867,6 @@ const selectedPayment = modal.querySelector(
 
 if (payment === "cash_on_delivery") {
     alert("Поръчката е приета с наложен платеж!");
-
-    modal.remove();
-
-    // Изчистваме количката
-    cart = [];
-    renderCart();
-
-    return;
 }
       const r=await fetch("/api/create-checkout-session",{
         method:"POST",
