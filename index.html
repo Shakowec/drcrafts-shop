@@ -866,15 +866,51 @@ const selectedPayment = modal.querySelector(
 )?.value;
 
 if (selectedPayment === "cash_on_delivery") {
-    alert("Поръчката е приета с наложен платеж!");
 
-    modal.remove();
+  const order = {
+    customer: {
+      name: document.querySelector("#customerName")?.value || "",
+      phone: document.querySelector("#customerPhone")?.value || "",
+      email: document.querySelector("#customerEmail")?.value || "",
+      address: document.querySelector("#customerAddress")?.value || "",
+      note: document.querySelector("#customerNote")?.value || "",
+      deliveryMethod: document.querySelector(
+        'input[name="deliveryMethod"]:checked'
+      )?.value || "",
+      courier: document.querySelector(
+        'input[name="courier"]:checked'
+      )?.value || "",
+      office: document.querySelector("#officeSelect")?.value || ""
+    },
 
-    // Изчистваме количката
-    cart = [];
-    renderCart();
+    paymentMethod: "cash_on_delivery",
 
-    return;
+    items: cart
+  };
+
+  const response = await fetch("/api/create-order", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(order)
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || !data.success) {
+    console.error("Order email error:", data);
+    throw new Error(data.error || "Грешка при изпращане на поръчката.");
+  }
+
+  alert("Поръчката е приета! Ще получите потвърждение по имейл.");
+
+  modal.remove();
+
+  cart = [];
+  renderCart();
+
+  return;
 }
       const r=await fetch("/api/create-checkout-session",{
         method:"POST",
