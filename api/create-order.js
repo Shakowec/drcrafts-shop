@@ -1,7 +1,7 @@
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({
-      error: "Method not allowed"
+      error: "Методът не е разрешен."
     });
   }
 
@@ -10,7 +10,7 @@ export default async function handler(req, res) {
 
     if (!order) {
       return res.status(400).json({
-        error: "Липсват данни за поръчката"
+        error: "Липсват данни за поръчката."
       });
     }
 
@@ -18,86 +18,78 @@ export default async function handler(req, res) {
 
     if (!apiKey) {
       return res.status(500).json({
-        error: "Липсва RESEND_API_KEY"
+        error: "Липсва RESEND_API_KEY."
       });
     }
 
-  const customer = order.customer || {};
+    const customer = order.customer || {};
+    const items = order.items || [];
 
-const productsText = (order.items || []).map((item, index) => {
-  const name = item.name || item.title || `Продукт №${item.id}`;
-  const qty = Number(item.qty || 1);
-  const price = Number(item.price || 0);
-  const total = price * qty;
+    let total = 0;
 
-  return `${index + 1}. ${name}
-Количество: ${qty}
-Цена: ${price.toFixed(2)} €
-Общо: ${total.toFixed(2)} €`;
-}).join("\n\n");
+    const productsText = items.map((item, index) => {
+      const name = item.name || `Продукт #${item.id || index + 1}`;
+      const qty = Number(item.qty) || 1;
+      const price = Number(item.price) || 0;
+      const sum = price * qty;
 
-const totalPrice = (order.items || []).reduce((sum, item) => {
-  return sum + (Number(item.price || 0) * Number(item.qty || 1));
-}, 0);
+      total += sum;
 
-const deliveryText =
-  customer.deliveryMethod === "office"
-    ? `До офис
-Куриер: ${customer.courier || "Не е посочен"}
-Офис: ${customer.office || "Не е посочен"}`
-    : `До адрес
-Адрес: ${customer.address || "Не е посочен"}`;
+      return `${index + 1}. ${name}
+   Количество: ${qty}
+   Единична цена: ${price.toFixed(2)} €
+   Стойност: ${sum.toFixed(2)} €`;
+    }).join("\n\n");
 
-const paymentText =
-  order.paymentMethod === "cash_on_delivery"
-    ? "Наложен платеж"
-    : "Плащане с карта";
+    const deliveryMethod =
+      customer.deliveryMethod === "office"
+        ? "До офис"
+        : "До адрес";
 
-const emailText = `
-🛍️ НОВА ПОРЪЧКА ОТ DRCraft
+    const paymentMethod =
+      order.paymentMethod === "cash_on_delivery"
+        ? "Наложен платеж"
+        : "Плащане с карта";
 
-================================
+    const emailText = `
+НОВА ПОРЪЧКА ОТ DRCRAFT
+==============================
 
-👤 ДАННИ ЗА КЛИЕНТА
+ИНФОРМАЦИЯ ЗА КЛИЕНТА
 
-Име: ${customer.name || "Не е посочено"}
-Телефон: ${customer.phone || "Не е посочен"}
-Имейл: ${customer.email || "Не е посочен"}
+Име: ${customer.name || "-"}
+Телефон: ${customer.phone || "-"}
+Имейл: ${customer.email || "-"}
 
-================================
+ДОСТАВКА
 
-🚚 ДОСТАВКА
+Начин на доставка: ${deliveryMethod}
+Куриер: ${customer.courier || "-"}
 
-${deliveryText}
+${customer.office
+  ? `Офис: ${customer.office}`
+  : `Адрес: ${customer.address || "-"}`}
 
-================================
+Бележка от клиента:
+${customer.note || "Няма"}
 
-💳 ПЛАЩАНЕ
+ПЛАЩАНЕ
 
-${paymentText}
+Начин на плащане: ${paymentMethod}
 
-================================
-
-🛒 ПРОДУКТИ
+ПРОДУКТИ
+==============================
 
 ${productsText || "Няма добавени продукти."}
 
-================================
+==============================
 
-💰 КРАЙНА СУМА
+ОБЩА СУМА: ${total.toFixed(2)} €
 
-${totalPrice.toFixed(2)} €
+==============================
 
-================================
-
-📝 ЗАБЕЛЕЖКА
-
-${customer.note || "Няма допълнителна забележка."}
-
-================================
-
-Поръчката е получена автоматично от сайта DRCraft.
-`;  
+Поръчката е направена автоматично през сайта на DRCRAFT.
+`;
 
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -108,7 +100,7 @@ ${customer.note || "Няма допълнителна забележка."}
       body: JSON.stringify({
         from: "DRCraft <onboarding@resend.dev>",
         to: ["drcrafts1307@gmail.com"],
-        subject: "🛍️ Нова поръчка от DRCRAFT",
+        subject: `🛍️ Нова поръчка от ${customer.name || "клиент"}`,
         text: emailText
       })
     });
@@ -119,7 +111,7 @@ ${customer.note || "Няма допълнителна забележка."}
       console.error("Resend error:", data);
 
       return res.status(500).json({
-        error: "Грешка при изпращане на имейла",
+        error: "Грешка при изпращане на имейла.",
         details: data
       });
     }
@@ -136,7 +128,7 @@ ${customer.note || "Няма допълнителна забележка."}
     console.error("Server error:", error);
 
     return res.status(500).json({
-      error: "Грешка при обработване на поръчката"
+      error: "Грешка при обработване на поръчката."
     });
   }
 }
