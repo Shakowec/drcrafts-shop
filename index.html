@@ -363,12 +363,18 @@ function renderProducts(){
     .forEach(b=>b.onclick=()=>add(b.dataset.add));
 }
 function add(id){
-  const product=PRODUCTS.find(x=>x.id===id);
-  if(!product)return;
+  const product=PRODUCTS.find(x=>String(x.id)===String(id));
+  if(!product){
+    console.error("Продуктът не е намерен:",id);
+    return;
+  }
 
-  const i=cart.find(x=>x.id===id);
+  let i=cart.find(x=>String(x.id)===String(id));
 
   if(i){
+    i.name=product.name;
+    i.price=Number(product.price)||0;
+    i.qty=Number(i.qty)||1;
     i.qty++;
   }else{
     cart.push({
