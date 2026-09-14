@@ -362,7 +362,26 @@ function renderProducts(){
   document.querySelectorAll("[data-add]")
     .forEach(b=>b.onclick=()=>add(b.dataset.add));
 }
-function add(id){const i=cart.find(x=>x.id===id);i?i.qty++:cart.push({id,qty:1});save();openCart()}
+function add(id){
+  const product=PRODUCTS.find(x=>x.id===id);
+  if(!product)return;
+
+  const i=cart.find(x=>x.id===id);
+
+  if(i){
+    i.qty++;
+  }else{
+    cart.push({
+      id:product.id,
+      name:product.name,
+      price:Number(product.price)||0,
+      qty:1
+    });
+  }
+
+  save();
+  openCart();
+}
 function change(id,d){const i=cart.find(x=>x.id===id);if(!i)return;i.qty+=d;if(i.qty<=0)cart=cart.filter(x=>x.id!==id);save();renderCart()}
 function removeItem(id){cart=cart.filter(x=>x.id!==id);save();renderCart()}
 function save(){localStorage.setItem("drcraft-cart",JSON.stringify(cart));renderCart()}
