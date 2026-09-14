@@ -388,8 +388,25 @@ function add(id){
   save();
   openCart();
 }
-function change(id,d){const i=cart.find(x=>x.id===id);if(!i)return;i.qty+=d;if(i.qty<=0)cart=cart.filter(x=>x.id!==id);save();renderCart()}
-function removeItem(id){cart=cart.filter(x=>x.id!==id);save();renderCart()}
+function change(id,d){
+  const i=cart.find(x=>String(x.id)===String(id));
+  if(!i)return;
+
+  i.qty+=d;
+
+  if(i.qty<=0){
+    cart=cart.filter(x=>String(x.id)!==String(id));
+  }
+
+  save();
+  renderCart();
+}
+
+function removeItem(id){
+  cart=cart.filter(x=>String(x.id)!==String(id));
+  save();
+  renderCart();
+}
 function save(){localStorage.setItem("drcraft-cart",JSON.stringify(cart));renderCart()}
 function renderCart(){
   const items = document.querySelector("#cartItems");
