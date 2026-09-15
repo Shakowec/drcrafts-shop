@@ -1039,7 +1039,425 @@ alert("Supabase error: " + JSON.stringify(error));;
     renderProducts();
   }
 }
+/* =========================
+   PROFILE MODAL
+========================= */
 
+const profileBtn = document.querySelector(".account");
+
+const profileModal = document.createElement("div");
+profileModal.id = "profileModal";
+
+profileModal.innerHTML = `
+  <div style="
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.45);
+    z-index:10000;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+  ">
+    <div style="
+      background:#fff;
+      width:100%;
+      max-width:600px;
+      max-height:92vh;
+      overflow:auto;
+      padding:28px 22px 35px;
+      border-radius:22px 22px 0 0;
+      box-sizing:border-box;
+    ">
+
+      <div style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        margin-bottom:25px;
+      ">
+        <h2 style="
+          margin:0;
+          font-size:30px;
+          color:#29231f;
+        ">Профил</h2>
+
+        <button id="closeProfile"
+          style="
+            border:0;
+            background:none;
+            font-size:32px;
+            color:#b58a2c;
+            cursor:pointer;
+          ">
+          ×
+        </button>
+      </div>
+
+      <div id="profileContent">
+
+        <div style="
+          display:grid;
+          gap:15px;
+        ">
+
+          <input
+            id="profileEmail"
+            type="email"
+            placeholder="Имейл"
+            style="
+              width:100%;
+              box-sizing:border-box;
+              padding:15px;
+              border:1px solid #ddd;
+              border-radius:8px;
+              font-size:16px;
+            "
+          >
+
+          <input
+            id="profilePassword"
+            type="password"
+            placeholder="Парола"
+            style="
+              width:100%;
+              box-sizing:border-box;
+              padding:15px;
+              border:1px solid #ddd;
+              border-radius:8px;
+              font-size:16px;
+            "
+          >
+
+          <input
+            id="profileFirstName"
+            type="text"
+            placeholder="Име"
+            style="
+              width:100%;
+              box-sizing:border-box;
+              padding:15px;
+              border:1px solid #ddd;
+              border-radius:8px;
+              font-size:16px;
+              display:none;
+            "
+          >
+
+          <input
+            id="profileLastName"
+            type="text"
+            placeholder="Фамилия"
+            style="
+              width:100%;
+              box-sizing:border-box;
+              padding:15px;
+              border:1px solid #ddd;
+              border-radius:8px;
+              font-size:16px;
+              display:none;
+            "
+          >
+
+          <input
+            id="profilePhone"
+            type="tel"
+            placeholder="Телефон"
+            style="
+              width:100%;
+              box-sizing:border-box;
+              padding:15px;
+              border:1px solid #ddd;
+              border-radius:8px;
+              font-size:16px;
+              display:none;
+            "
+          >
+
+          <button id="profileLogin"
+            style="
+              width:100%;
+              padding:15px;
+              border:0;
+              border-radius:8px;
+              background:#b58a2c;
+              color:white;
+              font-size:17px;
+              cursor:pointer;
+            ">
+            Вход
+          </button>
+
+          <button id="profileRegister"
+            style="
+              width:100%;
+              padding:15px;
+              border:1px solid #b58a2c;
+              border-radius:8px;
+              background:white;
+              color:#b58a2c;
+              font-size:17px;
+              cursor:pointer;
+            ">
+            Регистрация
+          </button>
+
+          <button id="profileReset"
+            style="
+              border:0;
+              background:none;
+              color:#777;
+              font-size:15px;
+              cursor:pointer;
+              padding:8px;
+            ">
+            Забравена парола?
+          </button>
+
+          <div id="profileMessage"
+            style="
+              text-align:center;
+              font-size:15px;
+              min-height:20px;
+            ">
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+`;
+
+document.body.appendChild(profileModal);
+profileModal.style.display = "none";
+profileBtn?.addEventListener("click", async () => {
+  profileModal.style.display = "block";
+
+  const { data } = await supabaseClient.auth.getUser();
+
+  if (data?.user) {
+    showLoggedInProfile(data.user);
+  } else {
+    showLoginProfile();
+  }
+});
+
+document.getElementById("closeProfile")?.addEventListener("click", () => {
+  profileModal.style.display = "none";
+});
+
+function showLoginProfile(){
+
+  const first = document.getElementById("profileFirstName");
+  const last = document.getElementById("profileLastName");
+  const phone = document.getElementById("profilePhone");
+
+  if(first) first.style.display="none";
+  if(last) last.style.display="none";
+  if(phone) phone.style.display="none";
+
+  document.getElementById("profileLogin").style.display="block";
+  document.getElementById("profileRegister").style.display="block";
+  document.getElementById("profileReset").style.display="block";
+
+  document.getElementById("profileMessage").textContent="";
+}
+
+function showLoggedInProfile(user){
+
+  const content=document.getElementById("profileContent");
+
+  content.innerHTML=`
+    <div style="text-align:center;">
+
+      <div style="
+        font-size:55px;
+        margin-bottom:10px;
+      ">👤</div>
+
+      <h3 style="
+        margin:0 0 10px;
+        color:#29231f;
+      ">
+        Здравей!
+      </h3>
+
+      <p style="
+        color:#777;
+        word-break:break-word;
+      ">
+        ${user.email || ""}
+      </p>
+
+      <button id="logoutProfile"
+        style="
+          width:100%;
+          padding:15px;
+          margin-top:15px;
+          border:1px solid #b58a2c;
+          border-radius:8px;
+          background:white;
+          color:#b58a2c;
+          font-size:17px;
+          cursor:pointer;
+        ">
+        Изход
+      </button>
+
+    </div>
+  `;
+
+  document.getElementById("logoutProfile")?.addEventListener("click", async () => {
+
+    await supabaseClient.auth.signOut();
+
+    showLoginProfile();
+
+    location.reload();
+
+  });
+}
+
+
+/* LOGIN */
+
+document.getElementById("profileLogin")?.addEventListener("click", async () => {
+
+  const email=document.getElementById("profileEmail").value.trim();
+  const password=document.getElementById("profilePassword").value;
+
+  const message=document.getElementById("profileMessage");
+
+  if(!email || !password){
+    message.textContent="Моля, въведи имейл и парола.";
+    return;
+  }
+
+  message.textContent="Влизане...";
+
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email:email,
+    password:password
+  });
+
+  if(error){
+    message.textContent="Грешен имейл или парола.";
+    return;
+  }
+
+  if(data?.user){
+
+    await supabaseClient
+      .from("profiles")
+      .upsert({
+        id:data.user.id
+      });
+
+    showLoggedInProfile(data.user);
+  }
+
+});
+
+
+/* REGISTER */
+
+document.getElementById("profileRegister")?.addEventListener("click", async () => {
+
+  const first=document.getElementById("profileFirstName");
+  const last=document.getElementById("profileLastName");
+  const phone=document.getElementById("profilePhone");
+
+  if(first.style.display==="none"){
+
+    first.style.display="block";
+    last.style.display="block";
+    phone.style.display="block";
+
+    document.getElementById("profileLogin").style.display="none";
+    document.getElementById("profileReset").style.display="none";
+
+    document.getElementById("profileRegister").textContent="Създай профил";
+
+    return;
+  }
+
+  const email=document.getElementById("profileEmail").value.trim();
+  const password=document.getElementById("profilePassword").value;
+
+  const message=document.getElementById("profileMessage");
+
+  if(!email || !password || !first.value.trim() || !last.value.trim()){
+
+    message.textContent="Моля, попълни всички задължителни полета.";
+    return;
+  }
+
+  if(password.length < 6){
+
+    message.textContent="Паролата трябва да е поне 6 символа.";
+    return;
+  }
+
+  message.textContent="Създаване на профил...";
+
+  const { data, error } = await supabaseClient.auth.signUp({
+
+    email:email,
+
+    password:password,
+
+    options:{
+      data:{
+        first_name:first.value.trim(),
+        last_name:last.value.trim(),
+        phone:phone.value.trim()
+      }
+    }
+
+  });
+
+  if(error){
+
+    message.textContent=error.message;
+    return;
+  }
+
+  message.textContent=
+    "Профилът е създаден. Провери имейла си за потвърждение.";
+
+});
+
+
+/* FORGOT PASSWORD */
+
+document.getElementById("profileReset")?.addEventListener("click", async () => {
+
+  const email=document.getElementById("profileEmail").value.trim();
+
+  const message=document.getElementById("profileMessage");
+
+  if(!email){
+
+    message.textContent="Първо въведи имейла си.";
+    return;
+  }
+
+  const { error } =
+    await supabaseClient.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin
+    });
+
+  if(error){
+
+    message.textContent=error.message;
+    return;
+  }
+
+  message.textContent=
+    "Изпратихме линк за възстановяване на паролата на имейла ти.";
+
+});
 loadProductsFromSupabase();
 </script>
 </body>
