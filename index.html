@@ -740,6 +740,7 @@ async function checkout(){
   `;
 
   document.body.appendChild(modal);
+await fillCheckoutFromProfile();  
   // Логика за доставка
 const deliveryToAddress = modal.querySelector("#deliveryToAddress");
 const deliveryToOffice = modal.querySelector("#deliveryToOffice");
@@ -1588,7 +1589,7 @@ document.getElementById("profileReset")?.addEventListener("click", async () => {
     phoneField.value = profile.phone || "";
   }
 }
-   fillCheckoutFromProfile();
+
 loadProductsFromSupabase(); 
 </script>
 </body>
