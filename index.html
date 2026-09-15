@@ -1563,7 +1563,33 @@ document.getElementById("profileReset")?.addEventListener("click", async () => {
     "Изпратихме линк за възстановяване на паролата на имейла ти.";
 
 });
-loadProductsFromSupabase();
+    async function fillCheckoutFromProfile(){
+  const { data: { user } } = await supabaseClient.auth.getUser();
+
+  if(!user) return;
+
+  const { data: profile } = await supabaseClient
+    .from("profiles")
+    .select("first_name,last_name,phone")
+    .eq("id", user.id)
+    .single();
+
+  if(!profile) return;
+
+  const nameField = document.getElementById("customerName");
+  const phoneField = document.getElementById("customerPhone");
+
+  if(nameField){
+    nameField.value =
+      `${profile.first_name || ""} ${profile.last_name || ""}`.trim();
+  }
+
+  if(phoneField){
+    phoneField.value = profile.phone || "";
+  }
+}
+   fillCheckoutFromProfile();
+loadProductsFromSupabase(); 
 </script>
 </body>
 </html>
