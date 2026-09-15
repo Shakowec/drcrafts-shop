@@ -1568,6 +1568,11 @@ document.getElementById("profileReset")?.addEventListener("click", async () => {
   const { data: { user } } = await supabaseClient.auth.getUser();
 
   if(!user) return;
+    const emailField = document.getElementById("customerEmail");
+
+if(emailField){
+  emailField.value = user.email || "";
+}  
 
   const { data: profile } = await supabaseClient
     .from("profiles")
