@@ -1264,9 +1264,23 @@ function showLoginProfile(){
   document.getElementById("profileMessage").textContent="";
 }
 
-function showLoggedInProfile(user){
+async function showLoggedInProfile(user){
 
   const content=document.getElementById("profileContent");
+
+  const {data:profile}=await supabaseClient
+    .from("profiles")
+    .select("*")
+    .eq("id",user.id)
+    .maybeSingle();
+
+  const meta=user.user_metadata || {};
+
+  const firstName=profile?.first_name || meta.first_name || "";
+  const lastName=profile?.last_name || meta.last_name || "";
+  const phone=profile?.phone || meta.phone || "";
+  const city=profile?.city || "";
+  const address=profile?.address || "";
 
   content.innerHTML=`
     <div style="text-align:center;">
@@ -1280,17 +1294,75 @@ function showLoggedInProfile(user){
         margin:0 0 10px;
         color:#29231f;
       ">
-        Здравей!
+        Моят профил
       </h3>
 
       <p style="
         color:#777;
         word-break:break-word;
+        margin-bottom:20px;
       ">
         ${user.email || ""}
       </p>
 
-      <button id="logoutProfile"
+      <input
+        id="profileEditFirstName"
+        type="text"
+        placeholder="Име"
+        value="${firstName}"
+        style="width:100%;padding:12px;margin-bottom:10px;"
+      >
+
+      <input
+        id="profileEditLastName"
+        type="text"
+        placeholder="Фамилия"
+        value="${lastName}"
+        style="width:100%;padding:12px;margin-bottom:10px;"
+      >
+
+      <input
+        id="profileEditPhone"
+        type="tel"
+        placeholder="Телефон"
+        value="${phone}"
+        style="width:100%;padding:12px;margin-bottom:10px;"
+      >
+
+      <input
+        id="profileEditCity"
+        type="text"
+        placeholder="Град"
+        value="${city}"
+        style="width:100%;padding:12px;margin-bottom:10px;"
+      >
+
+      <input
+        id="profileEditAddress"
+        type="text"
+        placeholder="Адрес"
+        value="${address}"
+        style="width:100%;padding:12px;margin-bottom:15px;"
+      >
+
+      <button
+        id="saveProfile"
+        style="
+          width:100%;
+          padding:15px;
+          border:0;
+          border-radius:8px;
+          background:#b58a2c;
+          color:white;
+          font-size:17px;
+          cursor:pointer;
+        "
+      >
+        Запази промените
+      </button>
+
+      <button
+        id="logoutProfile"
         style="
           width:100%;
           padding:15px;
@@ -1301,21 +1373,54 @@ function showLoggedInProfile(user){
           color:#b58a2c;
           font-size:17px;
           cursor:pointer;
-        ">
+        "
+      >
         Изход
       </button>
+
+      <p id="profileMessage" style="margin-top:12px;"></p>
 
     </div>
   `;
 
-  document.getElementById("logoutProfile")?.addEventListener("click", async () => {
+  document.getElementById("saveProfile")?.addEventListener("click",async()=>{
+
+    const first=document.getElementById("profileEditFirstName").value.trim();
+    const last=document.getElementById("profileEditLastName").value.trim();
+    const phoneValue=document.getElementById("profileEditPhone").value.trim();
+    const cityValue=document.getElementById("profileEditCity").value.trim();
+    const addressValue=document.getElementById("profileEditAddress").value.trim();
+    const message=document.getElementById("profileMessage");
+
+    message.textContent="Запазване...";
+
+    const {error}=await supabaseClient
+      .from("profiles")
+      .upsert({
+        id:user.id,
+        first_name:first,
+        last_name:last,
+        phone:phoneValue,
+        city:cityValue,
+        address:addressValue
+      });
+
+    if(error){
+      console.error(error);
+      message.textContent="Грешка при запазването.";
+      return;
+    }
+
+    message.textContent="Промените са запазени. ✅";
+  });
+
+  document.getElementById("logoutProfile")?.addEventListener("click",async()=>{
 
     await supabaseClient.auth.signOut();
 
     showLoginProfile();
 
-    location.reload();
-
+    window.location.href=window.location.href;
   });
 }
 
