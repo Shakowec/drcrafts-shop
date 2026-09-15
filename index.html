@@ -1576,7 +1576,7 @@ if(emailField){
 
   const { data: profile } = await supabaseClient
     .from("profiles")
- .select("first_name,last_name,phone,city,address")
+    .select("first_name,last_name,phone")
     .eq("id", user.id)
     .single();
 
