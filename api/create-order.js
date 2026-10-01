@@ -90,7 +90,61 @@ ${productsText || "Няма добавени продукти."}
 
 Поръчката е направена автоматично през сайта на DRCRAFT.
 `;
+// Записване на поръчката в Supabase
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+if (!supabaseUrl || !supabaseServiceRoleKey) {
+  return res.status(500).json({
+    error: "Липсват Supabase environment variables."
+  });
+}
+
+const supabaseResponse = await fetch(
+  `${supabaseUrl}/rest/v1/orders`,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "apikey": supabaseServiceRoleKey,
+      "Authorization": `Bearer ${supabaseServiceRoleKey}`,
+      "Prefer": "return=minimal"
+    },
+    body: JSON.stringify({
+      user_id: order.user_id || null,
+
+      customer_name: customer.name || "",
+      customer_phone: customer.phone || "",
+      customer_email: customer.email || "",
+
+      delivery_method: customer.deliveryMethod || "",
+      courier: customer.courier || "",
+      office: customer.office || "",
+      address: customer.address || "",
+
+      payment_method: order.paymentMethod || "",
+
+      items: items,
+
+      total: Number(total.toFixed(2)),
+
+      status: "new",
+
+      note: customer.note || ""
+    })
+  }
+);
+
+if (!supabaseResponse.ok) {
+  const supabaseError = await supabaseResponse.text();
+
+  console.error("Supabase order error:", supabaseError);
+
+  return res.status(500).json({
+    error: "Поръчката не можа да бъде записана в базата.",
+    details: supabaseError
+  });
+}
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
