@@ -101,7 +101,7 @@ if (!supabaseUrl || !supabaseServiceRoleKey) {
 }
 
 const supabaseResponse = await fetch(
-  `${supabaseUrl}/rest/v1/orders`,
+  new URL("/rest/v1/orders", supabaseUrl).toString(),
   {
     method: "POST",
     headers: {
