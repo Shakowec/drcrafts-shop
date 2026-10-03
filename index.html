@@ -1440,7 +1440,59 @@ async function showLoggedInProfile(user){
     window.location.href=window.location.href;
   });
 }
+document.getElementById("myOrdersProfile")?.addEventListener("click", async () => {
 
+  const { data: { user } } = await supabaseClient.auth.getUser();
+
+  if (!user) {
+    alert("Моля, влезте в профила си.");
+    return;
+  }
+
+  const { data: orders, error } = await supabaseClient
+    .from("orders")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Orders error:", error);
+    alert("Не успяхме да заредим поръчките.");
+    return;
+  }
+
+  if (!orders || orders.length === 0) {
+    alert("Все още нямате направени поръчки.");
+    return;
+  }
+
+  const ordersText = orders.map((order, index) => {
+
+    const date = order.created_at
+      ? new Date(order.created_at).toLocaleString("bg-BG")
+      : "-";
+
+    const items = Array.isArray(order.items)
+      ? order.items.map(item =>
+          `${item.name || "Продукт"} × ${item.qty || 1}`
+        ).join("\n")
+      : "Няма информация";
+
+    return `ПОРЪЧКА #${orders.length - index}
+
+Дата: ${date}
+Статус: ${order.status || "new"}
+Сума: ${Number(order.total || 0).toFixed(2)} €
+Доставка: ${order.delivery_method || "-"}
+Куриер: ${order.courier || "-"}
+
+Продукти:
+${items}`;
+  }).join("\n\n--------------------\n\n");
+
+  alert(ordersText);
+
+});
 
 /* LOGIN */
 
